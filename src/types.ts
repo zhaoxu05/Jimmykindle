@@ -1,4 +1,4 @@
-export type ThemeMode = 'eink' | 'eink-inverted' | 'dark' | 'sepia' | 'light';
+export type ThemeMode = 'eink' | 'eink-inverted' | 'dark' | 'sepia' | 'light' | 'parchment';
 
 export type LayoutPreset = 'auto' | 'four-grid' | 'time-focus' | 'split-dash' | 'minimal-dock' | 'vertical-stand';
 
@@ -80,7 +80,45 @@ export interface LunarInfo {
   gregorianStr: string; // 2026年7月24日
 }
 
+export type ModuleId =
+  | 'clock'
+  | 'weather'
+  | 'lunar'
+  | 'news'
+  | 'history'
+  | 'sunTrack'
+  | 'moonPhase'
+  | 'tides'
+  | 'quote';
+
+export const ALL_MODULE_IDS: ModuleId[] = [
+  'clock',
+  'quote',
+  'weather',
+  'lunar',
+  'news',
+  'history',
+  'sunTrack',
+  'moonPhase',
+  'tides',
+];
+
+export const MODULE_NAMES: Record<ModuleId, string> = {
+  clock: '时钟与时间 (Clock)',
+  quote: '每日一言 / 格言 (Quote)',
+  weather: '天气预报 (Weather)',
+  lunar: '农历宜忌与黄历 (Lunar)',
+  news: '头条热点新闻 (News)',
+  history: '历史上的今天 (History)',
+  sunTrack: '太阳轨迹日出日落 (Sun Track)',
+  moonPhase: '月相与天象 (Moon Phase)',
+  tides: '潮汐潮落高低潮位 (Tides)',
+};
+
 export interface AppSettings {
+  // Module Ordering
+  moduleOrder: ModuleId[];
+
   // Theme & Appearance
   theme: ThemeMode;
   layoutPreset: LayoutPreset;
@@ -103,6 +141,11 @@ export interface AppSettings {
   showNextHoliday: boolean;
   showHistoryToday: boolean;
   showNewsHeadlines: boolean;
+
+  // Astronomical & Nature Modules
+  showTides: boolean;
+  showSunTrack: boolean;
+  showMoonPhase: boolean;
 
   // Header & Controls
   controlBarPosition: 'collapsible' | 'bottom' | 'top';

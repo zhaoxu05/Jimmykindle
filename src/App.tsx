@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { AppSettings, WeatherData, City, ThemeMode, LayoutPreset, ResolutionPreset } from './types';
+import { AppSettings, WeatherData, City, ThemeMode, LayoutPreset, ResolutionPreset, ModuleId, ALL_MODULE_IDS } from './types';
 import { DEFAULT_CITIES, fetchWeatherWithFallback } from './services/weatherService';
 import { ClockDisplay } from './components/ClockDisplay';
 import { QuoteDisplay } from './components/QuoteDisplay';
@@ -7,6 +7,9 @@ import { LunarDisplay } from './components/LunarDisplay';
 import { WeatherDisplay } from './components/WeatherDisplay';
 import { HistoryTodayDisplay } from './components/HistoryTodayDisplay';
 import { NewsHeadlinesDisplay } from './components/NewsHeadlinesDisplay';
+import { SunTrackDisplay } from './components/SunTrackDisplay';
+import { MoonPhaseDisplay } from './components/MoonPhaseDisplay';
+import { TidesDisplay } from './components/TidesDisplay';
 import { SettingsModal } from './components/SettingsModal';
 import { KindleRefreshOverlay } from './components/KindleRefreshOverlay';
 import { ExportGuideModal } from './components/ExportGuideModal';
@@ -32,7 +35,15 @@ import {
 
 const STORAGE_KEY = 'kindle_desk_standby_settings_v1';
 
+const ensureCompleteModuleOrder = (order?: ModuleId[]): ModuleId[] => {
+  if (!order || !Array.isArray(order) || order.length === 0) return [...ALL_MODULE_IDS];
+  const existing = new Set(order);
+  const missing = ALL_MODULE_IDS.filter((id) => !existing.has(id));
+  return [...order, ...missing];
+};
+
 const DEFAULT_SETTINGS: AppSettings = {
+  moduleOrder: ALL_MODULE_IDS,
   theme: 'eink',
   layoutPreset: 'auto',
   resolutionPreset: 'voyage',
@@ -52,6 +63,10 @@ const DEFAULT_SETTINGS: AppSettings = {
   showNextHoliday: true,
   showHistoryToday: true,
   showNewsHeadlines: true,
+
+  showTides: false,
+  showSunTrack: false,
+  showMoonPhase: false,
 
   controlBarPosition: 'collapsible',
 
@@ -73,7 +88,15 @@ export default function App() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_SETTINGS,
+          ...parsed,
+          showSunTrack: parsed.showSunTrack ?? false,
+          showMoonPhase: parsed.showMoonPhase ?? false,
+          showTides: parsed.showTides ?? false,
+          moduleOrder: ensureCompleteModuleOrder(parsed.moduleOrder),
+        };
       }
     } catch {
       // Ignore
@@ -92,6 +115,16 @@ export default function App() {
       }
       return updated;
     });
+  }, []);
+
+  // Reset all settings to default
+  const resetAllSettings = useCallback(() => {
+    setSettings(DEFAULT_SETTINGS);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SETTINGS));
+    } catch {
+      // Ignore
+    }
   }, []);
 
   // Weather state
@@ -211,6 +244,8 @@ export default function App() {
         return 'bg-black text-white border-white select-none eink-mode';
       case 'sepia':
         return 'bg-[#F7F4EA] text-[#3D312A] border-[#D9CEBA]';
+      case 'parchment':
+        return 'bg-[#F4ECD8] text-[#3E2C1C] border-[#D1BF9D]';
       case 'dark':
         return 'bg-black text-zinc-100 border-zinc-800';
       case 'light':
@@ -265,6 +300,117 @@ export default function App() {
     }
   }, [settings.resolutionPreset]);
 
+  const activeOrderedModules = useMemo(() => {
+    const order = ensureCompleteModuleOrder(settings.moduleOrder);
+    return order.filter((id) => {
+      switch (id) {
+        case 'clock':
+          return true;
+        case 'weather':
+          return true;
+        case 'quote':
+          return settings.showQuote;
+        case 'lunar':
+          return settings.showLunar;
+        case 'news':
+          return settings.showNewsHeadlines;
+        case 'history':
+          return settings.showHistoryToday;
+        case 'sunTrack':
+          return settings.showSunTrack;
+        case 'moonPhase':
+          return settings.showMoonPhase;
+        case 'tides':
+          return settings.showTides;
+        default:
+          return true;
+      }
+    });
+  }, [settings]);
+
+  const leftColModules = useMemo(() => {
+    const half = Math.ceil(activeOrderedModules.length / 2);
+    return activeOrderedModules.slice(0, half);
+  }, [activeOrderedModules]);
+
+  const rightColModules = useMemo(() => {
+    const half = Math.ceil(activeOrderedModules.length / 2);
+    return activeOrderedModules.slice(half);
+  }, [activeOrderedModules]);
+
+  const renderModule = useCallback(
+    (id: ModuleId) => {
+      switch (id) {
+        case 'clock':
+          return (
+            <ClockDisplay
+              key="clock"
+              city={settings.timeCity}
+              use24Hour={settings.use24Hour}
+              showSeconds={settings.showSeconds}
+              fontSizeScale={settings.fontSizeScale}
+              isEink={isEink}
+              resolutionScale={resolutionScale}
+            />
+          );
+        case 'quote':
+          if (!settings.showQuote) return null;
+          return (
+            <QuoteDisplay
+              key="quote"
+              source={settings.quoteSource}
+              refreshIntervalMinutes={settings.quoteRefreshInterval}
+              isEink={isEink}
+              fontSizeScale={settings.fontSizeScale}
+            />
+          );
+        case 'weather':
+          return (
+            <WeatherDisplay
+              key="weather"
+              weatherData={weatherData}
+              loading={weatherLoading}
+              weatherCity={settings.weatherCity}
+              onRefresh={loadWeather}
+              onOpenSourceModal={() => setSettingsOpen(true)}
+              isEink={isEink}
+              sourcesStatus={simpleSourcesStatus}
+            />
+          );
+        case 'lunar':
+          if (!settings.showLunar) return null;
+          return (
+            <div key="lunar" className="w-full">
+              <LunarDisplay
+                showYiJi={settings.showYiJi}
+                showSolarTerms={settings.showSolarTerms}
+                showNextHoliday={settings.showNextHoliday}
+                isEink={isEink}
+              />
+            </div>
+          );
+        case 'news':
+          if (!settings.showNewsHeadlines) return null;
+          return <NewsHeadlinesDisplay key="news" isEink={isEink} />;
+        case 'history':
+          if (!settings.showHistoryToday) return null;
+          return <HistoryTodayDisplay key="history" isEink={isEink} />;
+        case 'sunTrack':
+          if (!settings.showSunTrack) return null;
+          return <SunTrackDisplay key="sunTrack" city={settings.weatherCity} isEink={isEink} />;
+        case 'moonPhase':
+          if (!settings.showMoonPhase) return null;
+          return <MoonPhaseDisplay key="moonPhase" isEink={isEink} />;
+        case 'tides':
+          if (!settings.showTides) return null;
+          return <TidesDisplay key="tides" isEink={isEink} />;
+        default:
+          return null;
+      }
+    },
+    [settings, isEink, resolutionScale, weatherData, weatherLoading, loadWeather, simpleSourcesStatus]
+  );
+
   return (
     <div
       id="standby-app-root"
@@ -315,7 +461,7 @@ export default function App() {
               {/* Theme Switcher */}
               <button
                 onClick={() => {
-                  const themes: ThemeMode[] = ['eink', 'eink-inverted', 'sepia', 'dark', 'light'];
+                  const themes: ThemeMode[] = ['eink', 'eink-inverted', 'sepia', 'parchment', 'dark', 'light'];
                   const nextIdx = (themes.indexOf(settings.theme) + 1) % themes.length;
                   updateSettings({ theme: themes[nextIdx] });
                 }}
@@ -412,7 +558,7 @@ export default function App() {
 
             <button
               onClick={() => {
-                const themes: ThemeMode[] = ['eink', 'eink-inverted', 'sepia', 'dark', 'light'];
+                const themes: ThemeMode[] = ['eink', 'eink-inverted', 'sepia', 'parchment', 'dark', 'light'];
                 const nextIdx = (themes.indexOf(settings.theme) + 1) % themes.length;
                 updateSettings({ theme: themes[nextIdx] });
               }}
@@ -470,27 +616,14 @@ export default function App() {
               />
             )}
 
-            {/* Micro info strip */}
-            <div className="flex flex-wrap items-center justify-center gap-3 px-4 py-2.5 rounded-2xl border border-current/20 bg-current/5 text-xs sm:text-sm font-semibold">
-              {settings.showLunar && (
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 opacity-80" />
-                  <span>农历 {settings.timeCity.name === settings.weatherCity.name ? '' : settings.timeCity.name}</span>
+            {/* Other active modules rendered in user order */}
+            {activeOrderedModules
+              .filter((id) => id !== 'clock' && id !== 'quote')
+              .map((id) => (
+                <div key={id} className="w-full max-w-xl">
+                  {renderModule(id)}
                 </div>
-              )}
-
-              {weatherData && (
-                <div className="flex items-center gap-2 border-l border-current/20 pl-3">
-                  <WeatherIcon iconName={weatherData.current.iconName} className="w-4 h-4" />
-                  <span>
-                    {settings.weatherCity.name} {weatherData.current.temp}°C {weatherData.current.text}
-                  </span>
-                  <span className="opacity-70 text-[11px]">
-                    ({weatherData.current.tempMin}°~{weatherData.current.tempMax}°)
-                  </span>
-                </div>
-              )}
-            </div>
+              ))}
           </div>
         )}
 
@@ -516,30 +649,15 @@ export default function App() {
               )}
             </div>
 
-            {/* Bottom Floating Horizontal Dock */}
-            <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-4 items-center p-4 rounded-3xl border border-current/20 bg-current/5">
-              <div className="md:col-span-5 border-b md:border-b-0 md:border-r border-current/15 pb-3 md:pb-0 md:pr-4">
-                {settings.showLunar && (
-                  <LunarDisplay
-                    showYiJi={settings.showYiJi}
-                    showSolarTerms={settings.showSolarTerms}
-                    showNextHoliday={settings.showNextHoliday}
-                    showHistoryToday={settings.showHistoryToday}
-                    isEink={isEink}
-                  />
-                )}
-              </div>
-              <div className="md:col-span-7">
-                <WeatherDisplay
-                  weatherData={weatherData}
-                  loading={weatherLoading}
-                  weatherCity={settings.weatherCity}
-                  onRefresh={loadWeather}
-                  onOpenSourceModal={() => setSettingsOpen(true)}
-                  isEink={isEink}
-                  sourcesStatus={simpleSourcesStatus}
-                />
-              </div>
+            {/* Bottom Horizontal Dock rendering active modules in user order */}
+            <div className="w-full flex flex-col sm:flex-row flex-wrap gap-4 items-stretch justify-center p-4 rounded-3xl border border-current/20 bg-current/5">
+              {activeOrderedModules
+                .filter((id) => id !== 'clock' && id !== 'quote')
+                .map((id) => (
+                  <div key={id} className="flex-1 min-w-[280px]">
+                    {renderModule(id)}
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -547,58 +665,11 @@ export default function App() {
         {/* LAYOUT: FOUR-GRID (四方格 2x2 均衡全屏) */}
         {settings.layoutPreset === 'four-grid' && (
           <div id="layout-four-grid" className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6 items-start w-full">
-            {/* Quadrant 1: Clock + Quote */}
-            <div className="flex flex-col gap-3 items-center justify-center p-4 sm:p-5 rounded-2xl border border-current/15 bg-current/5">
-              <ClockDisplay
-                city={settings.timeCity}
-                use24Hour={settings.use24Hour}
-                showSeconds={settings.showSeconds}
-                fontSizeScale={settings.fontSizeScale}
-                isEink={isEink}
-                resolutionScale={resolutionScale}
-              />
-              {settings.showQuote && (
-                <QuoteDisplay
-                  source={settings.quoteSource}
-                  refreshIntervalMinutes={settings.quoteRefreshInterval}
-                  isEink={isEink}
-                  fontSizeScale={settings.fontSizeScale}
-                />
-              )}
-            </div>
-
-            {/* Quadrant 2: Weather */}
-            <div className="flex flex-col gap-4 p-4 sm:p-5 rounded-2xl border border-current/15 bg-current/5">
-              <WeatherDisplay
-                weatherData={weatherData}
-                loading={weatherLoading}
-                weatherCity={settings.weatherCity}
-                onRefresh={loadWeather}
-                onOpenSourceModal={() => setSettingsOpen(true)}
-                isEink={isEink}
-                sourcesStatus={simpleSourcesStatus}
-              />
-            </div>
-
-            {/* Quadrant 3: Lunar */}
-            {settings.showLunar && (
-              <div className="w-full">
-                <LunarDisplay
-                  showYiJi={settings.showYiJi}
-                  showSolarTerms={settings.showSolarTerms}
-                  showNextHoliday={settings.showNextHoliday}
-                  isEink={isEink}
-                />
+            {activeOrderedModules.map((id) => (
+              <div key={id} className="w-full flex flex-col items-center">
+                {renderModule(id)}
               </div>
-            )}
-
-            {/* Quadrant 4: News Headlines & History Today */}
-            {(settings.showNewsHeadlines || settings.showHistoryToday) && (
-              <div className="w-full flex flex-col gap-4">
-                {settings.showNewsHeadlines && <NewsHeadlinesDisplay isEink={isEink} />}
-                {settings.showHistoryToday && <HistoryTodayDisplay isEink={isEink} />}
-              </div>
-            )}
+            ))}
           </div>
         )}
 
@@ -606,45 +677,18 @@ export default function App() {
         {settings.layoutPreset === 'split-dash' && (
           <div id="layout-split-dash" className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             <div className="lg:col-span-6 flex flex-col items-center justify-center p-2 space-y-4">
-              <ClockDisplay
-                city={settings.timeCity}
-                use24Hour={settings.use24Hour}
-                showSeconds={settings.showSeconds}
-                fontSizeScale={settings.fontSizeScale}
-                isEink={isEink}
-                resolutionScale={resolutionScale}
-              />
-              {settings.showQuote && (
-                <QuoteDisplay
-                  source={settings.quoteSource}
-                  refreshIntervalMinutes={settings.quoteRefreshInterval}
-                  isEink={isEink}
-                  fontSizeScale={settings.fontSizeScale}
-                />
-              )}
-              {settings.showLunar && (
-                <div className="w-full">
-                  <LunarDisplay
-                    showYiJi={settings.showYiJi}
-                    showSolarTerms={settings.showSolarTerms}
-                    showNextHoliday={settings.showNextHoliday}
-                    isEink={isEink}
-                  />
+              {leftColModules.map((id) => (
+                <div key={id} className="w-full flex justify-center">
+                  {renderModule(id)}
                 </div>
-              )}
+              ))}
             </div>
             <div className="lg:col-span-6 flex flex-col gap-4">
-              <WeatherDisplay
-                weatherData={weatherData}
-                loading={weatherLoading}
-                weatherCity={settings.weatherCity}
-                onRefresh={loadWeather}
-                onOpenSourceModal={() => setSettingsOpen(true)}
-                isEink={isEink}
-                sourcesStatus={simpleSourcesStatus}
-              />
-              {settings.showNewsHeadlines && <NewsHeadlinesDisplay isEink={isEink} />}
-              {settings.showHistoryToday && <HistoryTodayDisplay isEink={isEink} />}
+              {rightColModules.map((id) => (
+                <div key={id} className="w-full flex justify-center">
+                  {renderModule(id)}
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -652,52 +696,11 @@ export default function App() {
         {/* LAYOUT 4: VERTICAL STAND */}
         {settings.layoutPreset === 'vertical-stand' && (
           <div id="layout-vertical-stand" className="flex flex-col gap-5 items-center justify-center max-w-lg mx-auto w-full">
-            <ClockDisplay
-              city={settings.timeCity}
-              use24Hour={settings.use24Hour}
-              showSeconds={settings.showSeconds}
-              fontSizeScale={settings.fontSizeScale}
-              isEink={isEink}
-              resolutionScale={resolutionScale}
-            />
-            {settings.showQuote && (
-              <QuoteDisplay
-                source={settings.quoteSource}
-                refreshIntervalMinutes={settings.quoteRefreshInterval}
-                isEink={isEink}
-                fontSizeScale={settings.fontSizeScale}
-              />
-            )}
-
-            {settings.showLunar && (
-              <div className="w-full">
-                <LunarDisplay
-                  showYiJi={settings.showYiJi}
-                  showSolarTerms={settings.showSolarTerms}
-                  showNextHoliday={settings.showNextHoliday}
-                  isEink={isEink}
-                />
+            {activeOrderedModules.map((id) => (
+              <div key={id} className="w-full flex justify-center">
+                {renderModule(id)}
               </div>
-            )}
-
-            <div className="w-full">
-              <WeatherDisplay
-                weatherData={weatherData}
-                loading={weatherLoading}
-                weatherCity={settings.weatherCity}
-                onRefresh={loadWeather}
-                onOpenSourceModal={() => setSettingsOpen(true)}
-                isEink={isEink}
-                sourcesStatus={simpleSourcesStatus}
-              />
-            </div>
-
-            {(settings.showNewsHeadlines || settings.showHistoryToday) && (
-              <div className="w-full flex flex-col gap-4">
-                {settings.showNewsHeadlines && <NewsHeadlinesDisplay isEink={isEink} />}
-                {settings.showHistoryToday && <HistoryTodayDisplay isEink={isEink} />}
-              </div>
-            )}
+            ))}
           </div>
         )}
 
@@ -706,96 +709,28 @@ export default function App() {
           isLandscape ? (
             <div id="landscape-grid" className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
               <div className="lg:col-span-6 flex flex-col items-center justify-center p-2 space-y-4">
-                <ClockDisplay
-                  city={settings.timeCity}
-                  use24Hour={settings.use24Hour}
-                  showSeconds={settings.showSeconds}
-                  fontSizeScale={settings.fontSizeScale}
-                  isEink={isEink}
-                  resolutionScale={resolutionScale}
-                />
-                {settings.showQuote && (
-                  <QuoteDisplay
-                    source={settings.quoteSource}
-                    refreshIntervalMinutes={settings.quoteRefreshInterval}
-                    isEink={isEink}
-                    fontSizeScale={settings.fontSizeScale}
-                  />
-                )}
-                {settings.showLunar && (
-                  <div className="w-full">
-                    <LunarDisplay
-                      showYiJi={settings.showYiJi}
-                      showSolarTerms={settings.showSolarTerms}
-                      showNextHoliday={settings.showNextHoliday}
-                      isEink={isEink}
-                    />
+                {leftColModules.map((id) => (
+                  <div key={id} className="w-full flex justify-center">
+                    {renderModule(id)}
                   </div>
-                )}
+                ))}
               </div>
 
               <div className="lg:col-span-6 flex flex-col gap-4">
-                <WeatherDisplay
-                  weatherData={weatherData}
-                  loading={weatherLoading}
-                  weatherCity={settings.weatherCity}
-                  onRefresh={loadWeather}
-                  onOpenSourceModal={() => setSettingsOpen(true)}
-                  isEink={isEink}
-                  sourcesStatus={simpleSourcesStatus}
-                />
-                {settings.showNewsHeadlines && <NewsHeadlinesDisplay isEink={isEink} />}
-                {settings.showHistoryToday && <HistoryTodayDisplay isEink={isEink} />}
+                {rightColModules.map((id) => (
+                  <div key={id} className="w-full flex justify-center">
+                    {renderModule(id)}
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
-            <div id="portrait-stack" className="flex flex-col gap-6 items-center justify-center">
-              <ClockDisplay
-                city={settings.timeCity}
-                use24Hour={settings.use24Hour}
-                showSeconds={settings.showSeconds}
-                fontSizeScale={settings.fontSizeScale}
-                isEink={isEink}
-                resolutionScale={resolutionScale}
-              />
-              {settings.showQuote && (
-                <QuoteDisplay
-                  source={settings.quoteSource}
-                  refreshIntervalMinutes={settings.quoteRefreshInterval}
-                  isEink={isEink}
-                  fontSizeScale={settings.fontSizeScale}
-                />
-              )}
-
-              {settings.showLunar && (
-                <div className="w-full max-w-md">
-                  <LunarDisplay
-                    showYiJi={settings.showYiJi}
-                    showSolarTerms={settings.showSolarTerms}
-                    showNextHoliday={settings.showNextHoliday}
-                    isEink={isEink}
-                  />
+            <div id="portrait-stack" className="flex flex-col gap-6 items-center justify-center w-full max-w-md mx-auto">
+              {activeOrderedModules.map((id) => (
+                <div key={id} className="w-full">
+                  {renderModule(id)}
                 </div>
-              )}
-
-              <div className="w-full max-w-md">
-                <WeatherDisplay
-                  weatherData={weatherData}
-                  loading={weatherLoading}
-                  weatherCity={settings.weatherCity}
-                  onRefresh={loadWeather}
-                  onOpenSourceModal={() => setSettingsOpen(true)}
-                  isEink={isEink}
-                  sourcesStatus={simpleSourcesStatus}
-                />
-              </div>
-
-              {(settings.showNewsHeadlines || settings.showHistoryToday) && (
-                <div className="w-full max-w-md flex flex-col gap-4">
-                  {settings.showNewsHeadlines && <NewsHeadlinesDisplay isEink={isEink} />}
-                  {settings.showHistoryToday && <HistoryTodayDisplay isEink={isEink} />}
-                </div>
-              )}
+              ))}
             </div>
           )
         )}
@@ -827,7 +762,7 @@ export default function App() {
 
             <button
               onClick={() => {
-                const themes: ThemeMode[] = ['eink', 'eink-inverted', 'sepia', 'dark', 'light'];
+                const themes: ThemeMode[] = ['eink', 'eink-inverted', 'sepia', 'parchment', 'dark', 'light'];
                 const nextIdx = (themes.indexOf(settings.theme) + 1) % themes.length;
                 updateSettings({ theme: themes[nextIdx] });
               }}
@@ -913,6 +848,7 @@ export default function App() {
         onManualRefreshWeather={loadWeather}
         sourcesStatus={sourcesStatus}
         onTriggerKindleFlash={() => setKindleFlashActive(true)}
+        onResetAllSettings={resetAllSettings}
       />
 
       <ExportGuideModal

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppSettings, City, ThemeMode } from '../types';
+import { AppSettings, City, ThemeMode, ModuleId, ALL_MODULE_IDS, MODULE_NAMES } from '../types';
 import { DEFAULT_CITIES, searchCities, WEATHER_SOURCES } from '../services/weatherService';
 import {
   X,
@@ -23,6 +23,11 @@ import {
   BookOpen,
   Newspaper,
   PanelTop,
+  Waves,
+  ChevronUp,
+  ChevronDown,
+  ListOrdered,
+  RotateCcw,
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -33,6 +38,7 @@ interface SettingsModalProps {
   onManualRefreshWeather: () => void;
   sourcesStatus: Record<string, { status: string; msg?: string }>;
   onTriggerKindleFlash: () => void;
+  onResetAllSettings?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -43,14 +49,90 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onManualRefreshWeather,
   sourcesStatus,
   onTriggerKindleFlash,
+  onResetAllSettings,
 }) => {
-  const [activeTab, setActiveTab] = useState<'theme' | 'city' | 'weather' | 'kindle'>('theme');
+  const [activeTab, setActiveTab] = useState<'theme' | 'modules' | 'city' | 'weather' | 'kindle'>('theme');
   const [timeCitySearch, setTimeCitySearch] = useState('');
   const [weatherCitySearch, setWeatherCitySearch] = useState('');
   const [searchResultsTime, setSearchResultsTime] = useState<City[]>(DEFAULT_CITIES);
   const [searchResultsWeather, setSearchResultsWeather] = useState<City[]>(DEFAULT_CITIES);
   const [isSearchingTime, setIsSearchingTime] = useState(false);
   const [isSearchingWeather, setIsSearchingWeather] = useState(false);
+
+  const currentModuleOrder = settings.moduleOrder && settings.moduleOrder.length > 0
+    ? settings.moduleOrder
+    : ALL_MODULE_IDS;
+
+  const handleMoveModule = (idx: number, direction: 'up' | 'down') => {
+    const list = [...currentModuleOrder];
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= list.length) return;
+
+    const temp = list[idx];
+    list[idx] = list[targetIdx];
+    list[targetIdx] = temp;
+
+    onUpdateSettings({ moduleOrder: list });
+  };
+
+  const handleResetModuleOrder = () => {
+    onUpdateSettings({ moduleOrder: [...ALL_MODULE_IDS] });
+  };
+
+  const isModuleToggleable = (id: ModuleId): boolean => {
+    return id !== 'clock' && id !== 'weather';
+  };
+
+  const getModuleActiveState = (id: ModuleId): boolean => {
+    switch (id) {
+      case 'clock':
+        return true;
+      case 'weather':
+        return true;
+      case 'quote':
+        return settings.showQuote;
+      case 'lunar':
+        return settings.showLunar;
+      case 'news':
+        return settings.showNewsHeadlines;
+      case 'history':
+        return settings.showHistoryToday;
+      case 'sunTrack':
+        return settings.showSunTrack;
+      case 'moonPhase':
+        return settings.showMoonPhase;
+      case 'tides':
+        return settings.showTides;
+      default:
+        return true;
+    }
+  };
+
+  const toggleModuleActiveState = (id: ModuleId, active: boolean) => {
+    switch (id) {
+      case 'quote':
+        onUpdateSettings({ showQuote: active });
+        break;
+      case 'lunar':
+        onUpdateSettings({ showLunar: active });
+        break;
+      case 'news':
+        onUpdateSettings({ showNewsHeadlines: active });
+        break;
+      case 'history':
+        onUpdateSettings({ showHistoryToday: active });
+        break;
+      case 'sunTrack':
+        onUpdateSettings({ showSunTrack: active });
+        break;
+      case 'moonPhase':
+        onUpdateSettings({ showMoonPhase: active });
+        break;
+      case 'tides':
+        onUpdateSettings({ showTides: active });
+        break;
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -73,7 +155,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const themes: { id: ThemeMode; name: string; desc: string; icon: React.ReactNode }[] = [
     { id: 'eink', name: 'Kindle 电子墨水屏 (高对比白底)', desc: '极简黑白，无动画，防残影，Kindle 首选', icon: <Smartphone className="w-5 h-5" /> },
     { id: 'eink-inverted', name: 'Kindle 反色 (黑底白字)', desc: '适合 Kindle 夜间阅读或低光环境', icon: <Moon className="w-5 h-5" /> },
-    { id: 'sepia', name: '暖阳复古 (暖色纸张)', desc: '柔和暖护眼底色，桌面摆件推荐', icon: <Sun className="w-5 h-5" /> },
+    { id: 'sepia', name: '暖阳复古 (暖色护眼纸张)', desc: '柔和暖护眼底色，桌面摆件推荐', icon: <Sun className="w-5 h-5" /> },
+    { id: 'parchment', name: '羊皮纸古风 (古典典雅)', desc: '淡黄质感羊皮纸底色与深赭字迹，静谧典雅', icon: <BookOpen className="w-5 h-5 text-amber-700" /> },
     { id: 'dark', name: 'OLED 纯黑 (深色夜间)', desc: '纯黑背景，省电防灼屏，适合 iPad/PC', icon: <Tv className="w-5 h-5" /> },
     { id: 'light', name: '现代极简 (亮色通用)', desc: '通透白净，适合电脑桌面全屏待机', icon: <Sun className="w-5 h-5" /> },
   ];
@@ -126,6 +209,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             显示与主题
+          </button>
+          <button
+            onClick={() => setActiveTab('modules')}
+            className={`px-4 py-2.5 rounded-t-xl border-b-2 transition whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === 'modules'
+                ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-white dark:bg-zinc-900'
+                : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+            }`}
+          >
+            <ListOrdered className="w-4 h-4" />
+            <span>模块顺序与显示</span>
           </button>
           <button
             onClick={() => setActiveTab('city')}
@@ -361,6 +455,45 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       className="w-4 h-4 accent-amber-500"
                     />
                   </label>
+
+                  <label className="flex items-center justify-between p-3 rounded-xl border border-cyan-500/40 bg-cyan-500/5 cursor-pointer font-bold">
+                    <span className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400">
+                      <Waves className="w-4 h-4" />
+                      <span>显示【潮汐潮落与高低潮位】 (默认关)</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={settings.showTides}
+                      onChange={(e) => onUpdateSettings({ showTides: e.target.checked })}
+                      className="w-4 h-4 accent-cyan-500"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 rounded-xl border border-amber-500/40 bg-amber-500/5 cursor-pointer font-bold">
+                    <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                      <Sun className="w-4 h-4" />
+                      <span>显示【太阳轨迹与日出日落】 (默认关)</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={settings.showSunTrack}
+                      onChange={(e) => onUpdateSettings({ showSunTrack: e.target.checked })}
+                      className="w-4 h-4 accent-amber-500"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 rounded-xl border border-sky-500/40 bg-sky-500/5 cursor-pointer font-bold">
+                    <span className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400">
+                      <Moon className="w-4 h-4" />
+                      <span>显示【月相天象与亮面比例】 (默认关)</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={settings.showMoonPhase}
+                      onChange={(e) => onUpdateSettings({ showMoonPhase: e.target.checked })}
+                      className="w-4 h-4 accent-sky-500"
+                    />
+                  </label>
                   <label className="flex items-center justify-between p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/5 cursor-pointer font-bold sm:col-span-2">
                     <span className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                       <QuoteIcon className="w-4 h-4" />
@@ -477,7 +610,104 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* TAB 2: CITIES & TIMEZONE */}
+          {/* TAB 2: MODULE ORDER & VISIBILITY */}
+          {activeTab === 'modules' && (
+            <div className="space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5">
+                <div>
+                  <h4 className="font-bold text-base flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                    <ListOrdered className="w-5 h-5" />
+                    <span>自定义模块显隐与自由排序</span>
+                  </h4>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                    点击【▲/▼】微调模块上下顺位，主界面布局与竖屏单栏均将按照您设定的全局顺位呈现。
+                  </p>
+                </div>
+                <button
+                  onClick={handleResetModuleOrder}
+                  className="px-3 py-1.5 rounded-xl border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold flex items-center gap-1.5 shrink-0 self-start sm:self-auto transition"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>恢复默认顺序</span>
+                </button>
+              </div>
+
+              <div className="space-y-2.5">
+                {currentModuleOrder.map((id, idx) => {
+                  const isActive = getModuleActiveState(id);
+                  const toggleable = isModuleToggleable(id);
+
+                  return (
+                    <div
+                      key={id}
+                      className={`flex items-center justify-between p-3.5 rounded-2xl border transition ${
+                        isActive
+                          ? 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80 shadow-xs'
+                          : 'border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-100/40 dark:bg-zinc-900/30 opacity-60'
+                      }`}
+                    >
+                      {/* Left: Rank badge & Module name */}
+                      <div className="flex items-center gap-3">
+                        <span className="w-7 h-7 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-extrabold text-xs flex items-center justify-center shrink-0">
+                          #{idx + 1}
+                        </span>
+                        <div className="flex items-center gap-2 font-bold text-sm">
+                          <span>{MODULE_NAMES[id] || id}</span>
+                          {!toggleable && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-medium">
+                              核心常亮
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Right: Toggle & Ordering Controls */}
+                      <div className="flex items-center gap-3">
+                        {/* Toggle switch for optional modules */}
+                        {toggleable ? (
+                          <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">
+                              {isActive ? '已启用' : '已关闭'}
+                            </span>
+                            <input
+                              type="checkbox"
+                              checked={isActive}
+                              onChange={(e) => toggleModuleActiveState(id, e.target.checked)}
+                              className="w-4 h-4 accent-emerald-500"
+                            />
+                          </label>
+                        ) : (
+                          <span className="text-xs text-zinc-400 dark:text-zinc-500">常亮显示</span>
+                        )}
+
+                        {/* Up & Down buttons */}
+                        <div className="flex items-center gap-1 border-l border-zinc-200 dark:border-zinc-800 pl-3">
+                          <button
+                            onClick={() => handleMoveModule(idx, 'up')}
+                            disabled={idx === 0}
+                            className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-transparent transition"
+                            title="向上移动"
+                          >
+                            <ChevronUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleMoveModule(idx, 'down')}
+                            disabled={idx === currentModuleOrder.length - 1}
+                            className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-transparent transition"
+                            title="向下移动"
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: CITIES & TIMEZONE */}
           {activeTab === 'city' && (
             <div className="space-y-6">
               {/* Sync Cities Switch */}
@@ -734,7 +964,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-end">
+        <div className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+          <button
+            onClick={() => {
+              if (window.confirm('是否确定一键恢复所有面板设置、城市与模块排序至初始默认状态？')) {
+                onResetAllSettings?.();
+              }
+            }}
+            className="px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-xs font-bold flex items-center gap-1.5 transition"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>恢复全局默认设置</span>
+          </button>
+
           <button
             onClick={onClose}
             className="px-6 py-2.5 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition"
