@@ -14,6 +14,7 @@ import { TidesDisplay } from './components/TidesDisplay';
 import { SettingsModal } from './components/SettingsModal';
 import { KindleRefreshOverlay } from './components/KindleRefreshOverlay';
 import { ExportGuideModal } from './components/ExportGuideModal';
+import { VersionModal } from './components/VersionModal';
 import { WeatherIcon } from './components/WeatherIcons';
 import {
   Settings,
@@ -169,6 +170,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<'theme' | 'modules' | 'city' | 'weather' | 'kindle'>('theme');
   const [guideOpen, setGuideOpen] = useState(false);
+  const [versionOpen, setVersionOpen] = useState(false);
   const [kindleFlashActive, setKindleFlashActive] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsExpanded, setControlsExpanded] = useState(false);
@@ -320,7 +322,7 @@ export default function App() {
       case 'sepia':
         return 'bg-[#F7F4EA] text-[#3D312A] border-[#D9CEBA]';
       case 'parchment':
-        return 'bg-[#F4ECD8] text-[#3E2C1C] border-[#D1BF9D]';
+        return 'bg-[#EEE1BA] text-[#2E1D11] border-[#BFA87A] theme-parchment';
       case 'dark':
         return 'bg-black text-zinc-100 border-zinc-800';
       case 'light':
@@ -949,6 +951,15 @@ export default function App() {
             </button>
 
             <button
+              onClick={() => setVersionOpen(true)}
+              className="px-2.5 py-1 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold font-mono text-xs flex items-center gap-1 transition cursor-pointer"
+              title="点击查看更新日志"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>v1.4.0 日志</span>
+            </button>
+
+            <button
               onClick={() => setGuideOpen(true)}
               className="p-1.5 rounded-xl border border-current/30 hover:bg-current/10 transition"
               title="指南"
@@ -1003,6 +1014,15 @@ export default function App() {
 
         <div id="footer-system-info" className="flex items-center gap-3">
           <button
+            onClick={() => setVersionOpen(true)}
+            className="px-2 py-0.5 rounded-md font-mono font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 transition flex items-center gap-1 cursor-pointer"
+            title="点击查看各版本更新日志"
+          >
+            <span>v1.4.0</span>
+            <span className="text-[10px] underline">日志</span>
+          </button>
+          <span>•</span>
+          <button
             onClick={() => {
               setSettingsTab('theme');
               setSettingsOpen(true);
@@ -1046,6 +1066,11 @@ export default function App() {
       <ExportGuideModal
         isOpen={guideOpen}
         onClose={() => setGuideOpen(false)}
+      />
+
+      <VersionModal
+        isOpen={versionOpen}
+        onClose={() => setVersionOpen(false)}
       />
 
       <KindleRefreshOverlay
