@@ -82,11 +82,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   ];
 
   const resolutions: { id: AppSettings['resolutionPreset']; name: string; desc: string; tag: string; icon: React.ReactNode }[] = [
-    { id: 'auto', name: '智能自适应 (默认)', desc: '实时感知窗口及屏高尺寸，自动平滑响应', tag: 'AUTO', icon: <Sparkles className="w-5 h-5 text-emerald-500" /> },
-    { id: '1k', name: '1K / 1080P 标准屏', desc: '适配 Kindle Paperwhite / Oasis 与 1080P 显示器', tag: '1080P', icon: <Monitor className="w-5 h-5 text-sky-500" /> },
-    { id: '2k', name: '2K / 1440P 高清屏', desc: '适配 iPad Pro、2K 桌面显示屏，等比扩大元素', tag: '1440P', icon: <Maximize2 className="w-5 h-5 text-amber-500" /> },
-    { id: '3k', name: '3K 超清大屏', desc: '适配 3K MacBook Pro / 高清电子画框', tag: '3K', icon: <Tv className="w-5 h-5 text-purple-500" /> },
-    { id: '4k', name: '4K / 2160P 巨幕屏', desc: '适配 4K 客厅电视、Kindle Scribe 及 4K 墨水屏', tag: '4K', icon: <Sparkles className="w-5 h-5 text-rose-500" /> },
+    { id: 'voyage', name: 'Kindle Voyage (默认主力)', desc: '1440×1080 300PPI 6寸墨水屏，高对比黑白防揉影排版', tag: '300PPI', icon: <Smartphone className="w-5 h-5 text-emerald-500" /> },
+    { id: 'iphone-15-promax', name: 'iPhone 15 Pro Max', desc: '2796×1290 6.7寸 灵动岛长屏，针对纵向屏幕字号缩放', tag: '6.7寸', icon: <Smartphone className="w-5 h-5 text-sky-500" /> },
+    { id: 'mate-xt', name: '华为 Mate XT 三折叠', desc: '3184×2232 10.2寸展开大屏，宽幅多栏平铺展示', tag: '10.2寸', icon: <Maximize2 className="w-5 h-5 text-rose-500" /> },
+    { id: 'auto', name: '智能自适应', desc: '实时感知窗口及屏高尺寸，自动平滑响应', tag: 'AUTO', icon: <Sparkles className="w-5 h-5 text-amber-500" /> },
+    { id: '1k', name: '1K / 1080P 显示器', desc: '适配通用 1080P 桌面显示屏与底座', tag: '1080P', icon: <Monitor className="w-5 h-5 text-zinc-500" /> },
+    { id: '2k', name: '2K / 1440P 高清屏', desc: '适配 iPad Pro、2K 桌面显示屏，等比扩大元素', tag: '1440P', icon: <Maximize2 className="w-5 h-5 text-indigo-500" /> },
+    { id: '3k', name: '3K 超清屏', desc: '适配 3K MacBook Pro / 高清电子画框', tag: '3K', icon: <Tv className="w-5 h-5 text-purple-500" /> },
+    { id: '4k', name: '4K / 2160P 巨幕屏', desc: '适配 4K 客厅电视及 4K 大型墨水屏', tag: '4K', icon: <Sparkles className="w-5 h-5 text-rose-500" /> },
   ];
 
   return (
@@ -217,7 +220,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <label className="font-bold text-base block">分辨率屏型适配模式</label>
                   <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
-                    当前: {settings.resolutionPreset === 'auto' ? '智能自适应' : settings.resolutionPreset.toUpperCase()}
+                    当前: {
+                      settings.resolutionPreset === 'voyage' ? 'Kindle Voyage' :
+                      settings.resolutionPreset === 'iphone-15-promax' ? 'iPhone 15 Pro Max' :
+                      settings.resolutionPreset === 'mate-xt' ? '华为 Mate XT' :
+                      settings.resolutionPreset === 'auto' ? '智能自适应' :
+                      settings.resolutionPreset.toUpperCase()
+                    }
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

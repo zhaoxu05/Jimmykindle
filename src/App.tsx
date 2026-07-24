@@ -30,7 +30,7 @@ const STORAGE_KEY = 'kindle_desk_standby_settings_v1';
 const DEFAULT_SETTINGS: AppSettings = {
   theme: 'eink',
   layoutPreset: 'auto',
-  resolutionPreset: 'auto',
+  resolutionPreset: 'voyage',
   fontSizeScale: 1.0,
   showSeconds: true,
   use24Hour: true,
@@ -210,6 +210,12 @@ export default function App() {
 
   const resolutionScale = useMemo(() => {
     switch (settings.resolutionPreset) {
+      case 'voyage':
+        return 1.05;
+      case 'iphone-15-promax':
+        return 0.95;
+      case 'mate-xt':
+        return 1.35;
       case '1k':
         return 1.0;
       case '2k':
@@ -226,6 +232,12 @@ export default function App() {
 
   const containerMaxWidthClass = useMemo(() => {
     switch (settings.resolutionPreset) {
+      case 'voyage':
+        return 'max-w-5xl 2xl:max-w-6xl';
+      case 'iphone-15-promax':
+        return 'max-w-sm sm:max-w-md md:max-w-lg';
+      case 'mate-xt':
+        return 'max-w-[2000px]';
       case '1k':
         return 'max-w-7xl';
       case '2k':
@@ -261,7 +273,10 @@ export default function App() {
           )}
           <span>待机时钟</span>
           <span className="text-xs px-2 py-0.5 rounded border border-current/30 opacity-75 font-normal hidden sm:inline">
-            Kindle / 桌面 / {settings.resolutionPreset.toUpperCase()} 适配
+            {settings.resolutionPreset === 'voyage' && 'Kindle Voyage 原生适配'}
+            {settings.resolutionPreset === 'iphone-15-promax' && 'iPhone 15 Pro Max 适配'}
+            {settings.resolutionPreset === 'mate-xt' && '华为 Mate XT 三折叠适配'}
+            {settings.resolutionPreset !== 'voyage' && settings.resolutionPreset !== 'iphone-15-promax' && settings.resolutionPreset !== 'mate-xt' && `${settings.resolutionPreset.toUpperCase()} 适配`}
           </span>
         </div>
 
@@ -270,14 +285,17 @@ export default function App() {
           {/* Resolution Quick Switcher Pill */}
           <button
             onClick={() => {
-              const resList: ResolutionPreset[] = ['auto', '1k', '2k', '3k', '4k'];
+              const resList: ResolutionPreset[] = ['voyage', 'iphone-15-promax', 'mate-xt', 'auto', '1k', '2k', '3k', '4k'];
               const nextIdx = (resList.indexOf(settings.resolutionPreset) + 1) % resList.length;
               updateSettings({ resolutionPreset: resList[nextIdx] });
             }}
             className="px-2.5 py-1.5 rounded-xl border border-current/30 hover:bg-current/10 font-medium flex items-center gap-1.5 transition"
-            title="手动切换 1K / 2K / 3K / 4K 或 智能自适应"
+            title="手动切换 Kindle Voyage / iPhone 15PM / 华为 Mate XT / 屏幕分辨率"
           >
             <Monitor className="w-3.5 h-3.5 text-emerald-500" />
+            {settings.resolutionPreset === 'voyage' && <span>设备: Kindle Voyage</span>}
+            {settings.resolutionPreset === 'iphone-15-promax' && <span>设备: iPhone 15PM</span>}
+            {settings.resolutionPreset === 'mate-xt' && <span>设备: 华为 Mate XT</span>}
             {settings.resolutionPreset === 'auto' && <span>屏幕: 智能自适应</span>}
             {settings.resolutionPreset === '1k' && <span>屏幕: 1K 1080P</span>}
             {settings.resolutionPreset === '2k' && <span>屏幕: 2K 高清</span>}

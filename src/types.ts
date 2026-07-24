@@ -2,7 +2,7 @@ export type ThemeMode = 'eink' | 'eink-inverted' | 'dark' | 'sepia' | 'light';
 
 export type LayoutPreset = 'auto' | 'time-focus' | 'split-dash' | 'minimal-dock' | 'vertical-stand';
 
-export type ResolutionPreset = 'auto' | '1k' | '2k' | '3k' | '4k';
+export type ResolutionPreset = 'voyage' | 'iphone-15-promax' | 'mate-xt' | 'auto' | '1k' | '2k' | '3k' | '4k';
 
 export type ScreenOrientation = 'landscape' | 'portrait';
 
