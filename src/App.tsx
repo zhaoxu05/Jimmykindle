@@ -328,13 +328,13 @@ export default function App() {
   }, [settings]);
 
   const leftColModules = useMemo(() => {
-    const half = Math.ceil(activeOrderedModules.length / 2);
-    return activeOrderedModules.slice(0, half);
+    const leftSet = new Set<ModuleId>(['clock', 'lunar', 'sunTrack']);
+    return activeOrderedModules.filter((id) => leftSet.has(id));
   }, [activeOrderedModules]);
 
   const rightColModules = useMemo(() => {
-    const half = Math.ceil(activeOrderedModules.length / 2);
-    return activeOrderedModules.slice(half);
+    const leftSet = new Set<ModuleId>(['clock', 'lunar', 'sunTrack']);
+    return activeOrderedModules.filter((id) => !leftSet.has(id));
   }, [activeOrderedModules]);
 
   const renderModule = useCallback(
