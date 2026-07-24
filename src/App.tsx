@@ -1012,14 +1012,29 @@ export default function App() {
           )}
         </div>
 
-        <div id="footer-system-info" className="flex items-center gap-3">
+        <div id="footer-system-info" className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
           <button
             onClick={() => setVersionOpen(true)}
-            className="px-2.5 py-0.5 rounded-md font-mono font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 transition flex items-center gap-1 cursor-pointer"
+            className="hover:underline flex items-center gap-1 opacity-85 hover:opacity-100 transition cursor-pointer font-medium"
             title="点击查看各版本更新日志"
           >
-            <Sparkles className="w-3 h-3 text-amber-500" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <span>v1.4.0 日志</span>
+          </button>
+          <span>•</span>
+          <button
+            onClick={() => {
+              if (typeof (window as any).switchToKindleMode === 'function') {
+                (window as any).switchToKindleMode();
+              } else {
+                localStorage.setItem('desk_clock_force_kindle', 'true');
+                window.location.reload();
+              }
+            }}
+            className="underline hover:opacity-100 opacity-85 transition cursor-pointer"
+            title="强行切换至 Kindle ES5 独立原生模式（纯净低功耗、支持 90°/270° 横屏旋转）"
+          >
+            📟 Kindle模式
           </button>
           <span>•</span>
           <button
@@ -1027,14 +1042,14 @@ export default function App() {
               setSettingsTab('theme');
               setSettingsOpen(true);
             }}
-            className="underline hover:opacity-100 transition"
+            className="underline hover:opacity-100 opacity-85 transition cursor-pointer"
           >
             设置
           </button>
           <span>•</span>
           <button
             onClick={() => setKindleFlashActive(true)}
-            className="underline hover:opacity-100 transition"
+            className="underline hover:opacity-100 opacity-85 transition cursor-pointer"
           >
             刷屏清残影
           </button>

@@ -59,10 +59,19 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </StrictMode>,
+const isForceKindle = typeof window !== 'undefined' && (
+  window.location.search.indexOf('mode=kindle') !== -1 || 
+  localStorage.getItem('desk_clock_force_kindle') === 'true'
 );
+
+if (isForceKindle) {
+  console.log('Kindle Standalone ES5 Mode is force-enabled.');
+} else {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </StrictMode>,
+  );
+}

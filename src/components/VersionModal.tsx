@@ -15,19 +15,19 @@ export const VERSION_LOGS: VersionLog[] = [
   {
     version: 'v1.4.0',
     date: '2026-07-24',
-    title: 'Kindle 原生 ES5 全卡片桌面与浅仿古羊皮纸 (#F7EDD3) 升级',
+    title: 'Kindle 横屏摆放与原生 ES5 浅仿古羊皮纸 (#F7EDD3) 升级',
     badge: '最新大版本',
     isLatest: true,
     highlights: [
-      '完美移植古诗词金句、历史上的今天、世界时钟与倒计时到 Kindle Voyage 引擎',
-      '时间与日期字号震撼自适应放大，全屏充满不再留白',
-      '采用浅仿古羊皮纸 HEX: #F7EDD3 (RGB 247, 237, 211) 精准质感配色',
-      '内置全屏黑白反转刷屏功能，有效消除 Ink 墨水屏残影'
+      '新增 Kindle 专属 90°/270° 屏幕旋转与震撼横屏分栏布局',
+      '时间字号倍数级震撼放大（最高 260px），横屏摆放满屏极具视觉冲击力',
+      '采用浅仿古羊皮纸 HEX: #F7EDD3 (RGB 247, 237, 211) 浅黄质感配色',
+      '完美移植古诗词、历史上的今天、世界时钟与倒计时到 Kindle ES5 独立引擎'
     ],
     details: [
-      '全面优化 Kindle Voyage、Paperwhite 等早期 Kindle 设备的静态 ES5 独立引擎。',
-      '在无高版本 JS 引擎前提下，完美实现时间居中震撼放大、浅仿古羊皮纸纹理、诗词金句轮播、世界时钟与倒计时全功能渲染。',
-      '静态 HTML 层内置独立离线天气、农历二十四节气与防残影刷屏冲刷机制。'
+      '专门针对 Kindle 网页浏览器不支持系统旋转的痛点，新增顺时针 90° 与逆时针 270° 软件一键横屏旋转功能。',
+      '在横屏模式下，左侧呈现极具震撼效果的大字时间与日期农历，右侧并排展示全功能卡片，充实整屏绝不留白。',
+      '精准应用浅仿古羊皮纸 HEX: #F7EDD3 经典配色，搭配径向渐变与微粒纹理，并集成一键黑白刷屏冲刷防残影功能。'
     ]
   },
   {
@@ -133,19 +133,21 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
                   onClick={() => setSelectedVersion(log.version)}
                   className={`w-full text-left px-3 py-2.5 rounded-2xl transition flex items-center justify-between cursor-pointer ${
                     isSelected
-                      ? 'bg-emerald-500 text-white font-bold shadow-md'
+                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-bold shadow-md'
                       : 'hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300'
                   }`}
                 >
                   <div className="flex flex-col">
                     <span className="text-sm font-mono">{log.version}</span>
-                    <span className={`text-[11px] ${isSelected ? 'text-emerald-100' : 'text-zinc-400 dark:text-zinc-500'}`}>
+                    <span className={`text-[11px] ${isSelected ? 'opacity-80' : 'text-zinc-400 dark:text-zinc-500'}`}>
                       {log.date}
                     </span>
                   </div>
                   {log.isLatest && (
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                      isSelected ? 'bg-white text-emerald-600' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                      isSelected 
+                        ? 'bg-amber-400 text-zinc-950 dark:bg-zinc-800 dark:text-amber-300' 
+                        : 'bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200'
                     }`}>
                       最新
                     </span>
@@ -160,11 +162,11 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
             {/* Version Title Banner */}
             <div className="space-y-2 pb-4 border-b border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-2xl font-extrabold font-mono tracking-tight text-emerald-600 dark:text-emerald-400">
+                <span className="text-2xl font-extrabold font-mono tracking-tight text-zinc-900 dark:text-zinc-100">
                   {activeLog.version}
                 </span>
                 {activeLog.badge && (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700">
                     {activeLog.badge}
                   </span>
                 )}
@@ -188,9 +190,9 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
                 {activeLog.highlights.map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/50 flex items-start gap-2 text-xs sm:text-sm font-medium"
+                    className="p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/50 flex items-start gap-2 text-xs sm:text-sm font-medium text-zinc-800 dark:text-zinc-200"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-zinc-700 dark:text-zinc-300 shrink-0 mt-0.5" />
                     <span>{item}</span>
                   </div>
                 ))}
@@ -200,10 +202,10 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
             {/* Detailed Description */}
             <div className="space-y-2">
               <div className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                <Layers className="w-3.5 h-3.5 text-emerald-500" />
+                <Layers className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
                 <span>详细改进记录</span>
               </div>
-              <ul className="space-y-2 list-disc list-inside text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
+              <ul className="space-y-2 list-disc list-inside text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                 {activeLog.details.map((detail, idx) => (
                   <li key={idx} className="pl-1">
                     {detail}
@@ -213,8 +215,8 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
             </div>
 
             {/* Note for Kindle users */}
-            <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
-              <Smartphone className="w-4 h-4 shrink-0 text-emerald-500" />
+            <div className="p-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 text-xs text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+              <Smartphone className="w-4 h-4 shrink-0 text-zinc-600 dark:text-zinc-400" />
               <span>所有旧款 Kindle（如 Voyage / Paperwhite 3 等）均已支持自动降级至独立 ES5 引擎，确保无脚本报错。</span>
             </div>
           </div>

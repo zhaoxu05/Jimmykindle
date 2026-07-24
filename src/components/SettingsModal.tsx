@@ -996,9 +996,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* TAB 4: KINDLE OPTIMIZATIONS */}
           {activeTab === 'kindle' && (
             <div className="space-y-5">
+              {/* Standalone ES5 Mode Switcher Box */}
+              <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2 bg-zinc-50 dark:bg-zinc-900/40">
+                <div className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-amber-500" />
+                  <span>普通 React 模式 与 Kindle ES5 独立模式切换</span>
+                </div>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  旧款 Kindle 设备（如 Voyage / Paperwhite 3）浏览器会默认自动进入零死机、极速排版的原生 ES5 模式。您也可以在任何设备上手动一键切入 Kindle ES5 原生模式（支持 90°/270° 一键横屏旋转）。
+                </p>
+                <div className="pt-2 flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (typeof (window as any).switchToKindleMode === 'function') {
+                        (window as any).switchToKindleMode();
+                      } else {
+                        localStorage.setItem('desk_clock_force_kindle', 'true');
+                        window.location.reload();
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-bold text-xs cursor-pointer hover:opacity-90 transition shadow-xs flex items-center gap-1.5"
+                  >
+                    <Smartphone className="w-4 h-4" />
+                    <span>📟 切换至 Kindle 原生 ES5 模式</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
                 <div className="font-bold flex items-center gap-2 text-base">
-                  <Smartphone className="w-5 h-5 text-emerald-500" />
+                  <Smartphone className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
                   <span>Kindle 电子墨水屏防残影刷屏</span>
                 </div>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
