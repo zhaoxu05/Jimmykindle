@@ -5,6 +5,7 @@ import { ClockDisplay } from './components/ClockDisplay';
 import { QuoteDisplay } from './components/QuoteDisplay';
 import { LunarDisplay } from './components/LunarDisplay';
 import { WeatherDisplay } from './components/WeatherDisplay';
+import { HistoryTodayDisplay } from './components/HistoryTodayDisplay';
 import { SettingsModal } from './components/SettingsModal';
 import { KindleRefreshOverlay } from './components/KindleRefreshOverlay';
 import { ExportGuideModal } from './components/ExportGuideModal';
@@ -240,7 +241,7 @@ export default function App() {
       case 'voyage':
         return 'max-w-5xl 2xl:max-w-6xl';
       case 'iphone-15-promax':
-        return 'max-w-sm sm:max-w-md md:max-w-lg';
+        return 'max-w-3xl md:max-w-4xl lg:max-w-5xl';
       case 'mate-xt':
         return 'max-w-[2000px]';
       case '1k':
@@ -473,10 +474,11 @@ export default function App() {
           </div>
         )}
 
-        {/* LAYOUT 3: SPLIT DASHBOARD */}
-        {settings.layoutPreset === 'split-dash' && (
-          <div id="layout-split-dash" className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-            <div className="lg:col-span-7 flex flex-col items-center justify-center p-4 space-y-4">
+        {/* LAYOUT: FOUR-GRID (四方格 2x2 均衡全屏) */}
+        {settings.layoutPreset === 'four-grid' && (
+          <div id="layout-four-grid" className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6 items-start w-full">
+            {/* Quadrant 1: Clock + Quote */}
+            <div className="flex flex-col gap-3 items-center justify-center p-4 sm:p-5 rounded-2xl border border-current/15 bg-current/5">
               <ClockDisplay
                 city={settings.timeCity}
                 use24Hour={settings.use24Hour}
@@ -494,16 +496,9 @@ export default function App() {
                 />
               )}
             </div>
-            <div className="lg:col-span-5 flex flex-col gap-4">
-              {settings.showLunar && (
-                <LunarDisplay
-                  showYiJi={settings.showYiJi}
-                  showSolarTerms={settings.showSolarTerms}
-                  showNextHoliday={settings.showNextHoliday}
-                  showHistoryToday={settings.showHistoryToday}
-                  isEink={isEink}
-                />
-              )}
+
+            {/* Quadrant 2: Weather */}
+            <div className="flex flex-col gap-4 p-4 sm:p-5 rounded-2xl border border-current/15 bg-current/5">
               <WeatherDisplay
                 weatherData={weatherData}
                 loading={weatherLoading}
@@ -513,6 +508,73 @@ export default function App() {
                 isEink={isEink}
                 sourcesStatus={simpleSourcesStatus}
               />
+            </div>
+
+            {/* Quadrant 3: Lunar */}
+            {settings.showLunar && (
+              <div className="w-full">
+                <LunarDisplay
+                  showYiJi={settings.showYiJi}
+                  showSolarTerms={settings.showSolarTerms}
+                  showNextHoliday={settings.showNextHoliday}
+                  isEink={isEink}
+                />
+              </div>
+            )}
+
+            {/* Quadrant 4: History Today */}
+            {settings.showHistoryToday && (
+              <div className="w-full">
+                <HistoryTodayDisplay isEink={isEink} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* LAYOUT 3: SPLIT DASHBOARD */}
+        {settings.layoutPreset === 'split-dash' && (
+          <div id="layout-split-dash" className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+            <div className="lg:col-span-6 flex flex-col items-center justify-center p-2 space-y-4">
+              <ClockDisplay
+                city={settings.timeCity}
+                use24Hour={settings.use24Hour}
+                showSeconds={settings.showSeconds}
+                fontSizeScale={settings.fontSizeScale}
+                isEink={isEink}
+                resolutionScale={resolutionScale}
+              />
+              {settings.showQuote && (
+                <QuoteDisplay
+                  source={settings.quoteSource}
+                  refreshIntervalMinutes={settings.quoteRefreshInterval}
+                  isEink={isEink}
+                  fontSizeScale={settings.fontSizeScale}
+                />
+              )}
+              {settings.showLunar && (
+                <div className="w-full">
+                  <LunarDisplay
+                    showYiJi={settings.showYiJi}
+                    showSolarTerms={settings.showSolarTerms}
+                    showNextHoliday={settings.showNextHoliday}
+                    isEink={isEink}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="lg:col-span-6 flex flex-col gap-4">
+              <WeatherDisplay
+                weatherData={weatherData}
+                loading={weatherLoading}
+                weatherCity={settings.weatherCity}
+                onRefresh={loadWeather}
+                onOpenSourceModal={() => setSettingsOpen(true)}
+                isEink={isEink}
+                sourcesStatus={simpleSourcesStatus}
+              />
+              {settings.showHistoryToday && (
+                <HistoryTodayDisplay isEink={isEink} />
+              )}
             </div>
           </div>
         )}
@@ -543,7 +605,6 @@ export default function App() {
                   showYiJi={settings.showYiJi}
                   showSolarTerms={settings.showSolarTerms}
                   showNextHoliday={settings.showNextHoliday}
-                  showHistoryToday={settings.showHistoryToday}
                   isEink={isEink}
                 />
               </div>
@@ -560,14 +621,20 @@ export default function App() {
                 sourcesStatus={simpleSourcesStatus}
               />
             </div>
+
+            {settings.showHistoryToday && (
+              <div className="w-full">
+                <HistoryTodayDisplay isEink={isEink} />
+              </div>
+            )}
           </div>
         )}
 
         {/* LAYOUT 5: AUTO RESPONSIVE */}
         {settings.layoutPreset === 'auto' && (
           isLandscape ? (
-            <div id="landscape-grid" className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-              <div className="lg:col-span-7 flex flex-col items-center justify-center p-4 space-y-4">
+            <div id="landscape-grid" className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+              <div className="lg:col-span-6 flex flex-col items-center justify-center p-2 space-y-4">
                 <ClockDisplay
                   city={settings.timeCity}
                   use24Hour={settings.use24Hour}
@@ -584,19 +651,19 @@ export default function App() {
                     fontSizeScale={settings.fontSizeScale}
                   />
                 )}
+                {settings.showLunar && (
+                  <div className="w-full">
+                    <LunarDisplay
+                      showYiJi={settings.showYiJi}
+                      showSolarTerms={settings.showSolarTerms}
+                      showNextHoliday={settings.showNextHoliday}
+                      isEink={isEink}
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="lg:col-span-5 flex flex-col gap-4">
-                {settings.showLunar && (
-                  <LunarDisplay
-                    showYiJi={settings.showYiJi}
-                    showSolarTerms={settings.showSolarTerms}
-                    showNextHoliday={settings.showNextHoliday}
-                    showHistoryToday={settings.showHistoryToday}
-                    isEink={isEink}
-                  />
-                )}
-
+              <div className="lg:col-span-6 flex flex-col gap-4">
                 <WeatherDisplay
                   weatherData={weatherData}
                   loading={weatherLoading}
@@ -606,6 +673,9 @@ export default function App() {
                   isEink={isEink}
                   sourcesStatus={simpleSourcesStatus}
                 />
+                {settings.showHistoryToday && (
+                  <HistoryTodayDisplay isEink={isEink} />
+                )}
               </div>
             </div>
           ) : (
@@ -633,7 +703,6 @@ export default function App() {
                     showYiJi={settings.showYiJi}
                     showSolarTerms={settings.showSolarTerms}
                     showNextHoliday={settings.showNextHoliday}
-                    showHistoryToday={settings.showHistoryToday}
                     isEink={isEink}
                   />
                 </div>
@@ -650,6 +719,12 @@ export default function App() {
                   sourcesStatus={simpleSourcesStatus}
                 />
               </div>
+
+              {settings.showHistoryToday && (
+                <div className="w-full max-w-md">
+                  <HistoryTodayDisplay isEink={isEink} />
+                </div>
+              )}
             </div>
           )
         )}

@@ -1,14 +1,11 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { getLunarInfo } from '../utils/lunar';
-import { Calendar, Compass, Sparkles, PartyPopper, History, RefreshCw, ChevronRight } from 'lucide-react';
-import { fetchHistoryToday } from '../services/historyService';
-import { HistoryEvent } from '../types';
+import { Calendar, Compass, Sparkles, PartyPopper } from 'lucide-react';
 
 interface LunarDisplayProps {
   showYiJi: boolean;
   showSolarTerms: boolean;
   showNextHoliday?: boolean;
-  showHistoryToday?: boolean;
   isEink: boolean;
 }
 
@@ -16,32 +13,9 @@ export const LunarDisplay: React.FC<LunarDisplayProps> = ({
   showYiJi,
   showSolarTerms,
   showNextHoliday = true,
-  showHistoryToday = true,
   isEink,
 }) => {
   const lunarInfo = useMemo(() => getLunarInfo(new Date()), []);
-  const [historyEvents, setHistoryEvents] = useState<HistoryEvent[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [activeHistoryIndex, setActiveHistoryIndex] = useState(0);
-
-  useEffect(() => {
-    if (!showHistoryToday) return;
-    let mounted = true;
-    setHistoryLoading(true);
-    fetchHistoryToday(new Date())
-      .then((events) => {
-        if (mounted) {
-          setHistoryEvents(events);
-          setHistoryLoading(false);
-        }
-      })
-      .catch(() => {
-        if (mounted) setHistoryLoading(false);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, [showHistoryToday]);
 
   return (
     <div id="lunar-display-card" className={`w-full flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl border transition-all space-y-3.5 ${
@@ -184,58 +158,6 @@ export const LunarDisplay: React.FC<LunarDisplayProps> = ({
               )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Today in History (历史上的今天) Section */}
-      {showHistoryToday && (
-        <div id="history-today-section" className="w-full pt-3 border-t border-current/20">
-          <div className="flex items-center justify-between text-xs font-bold mb-2">
-            <div className="flex items-center gap-1.5">
-              <History className={`w-4 h-4 ${isEink ? 'text-current' : 'text-emerald-600 dark:text-emerald-400'}`} />
-              <span className="font-extrabold text-sm">历史上的今天</span>
-            </div>
-            {historyEvents.length > 1 && (
-              <button
-                onClick={() => setActiveHistoryIndex((prev) => (prev + 1) % historyEvents.length)}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border-1.5 font-bold transition text-xs ${
-                  isEink
-                    ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
-                    : 'border-current/30 hover:bg-current/10'
-                }`}
-                title="换一条历史事件"
-              >
-                <span>换一条 ({activeHistoryIndex + 1}/{historyEvents.length})</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {historyLoading ? (
-            <div className="text-xs opacity-70 py-1 flex items-center gap-2 font-medium">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              <span>正在获取历史上的今天...</span>
-            </div>
-          ) : historyEvents.length > 0 ? (
-            <div className={`p-3 rounded-xl border-2 text-xs sm:text-sm flex items-start gap-2.5 font-bold ${
-              isEink
-                ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100'
-                : 'border-current/20 bg-current/5 text-current'
-            }`}>
-              <span className={`px-2.5 py-1 rounded-md font-black shrink-0 text-xs border ${
-                isEink
-                  ? 'bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900'
-                  : 'bg-emerald-700 text-white dark:bg-emerald-600 dark:text-white border-emerald-800'
-              }`}>
-                {historyEvents[activeHistoryIndex]?.year}
-              </span>
-              <p className="leading-relaxed pt-0.5">
-                {historyEvents[activeHistoryIndex]?.title}
-              </p>
-            </div>
-          ) : (
-            <div className="text-xs opacity-60">暂无历史今日记录</div>
-          )}
         </div>
       )}
     </div>

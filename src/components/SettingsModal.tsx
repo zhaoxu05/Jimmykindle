@@ -18,6 +18,7 @@ import {
   Sparkles,
   Monitor,
   Maximize2,
+  LayoutGrid,
   Quote as QuoteIcon,
   BookOpen,
 } from 'lucide-react';
@@ -77,8 +78,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const layouts: { id: AppSettings['layoutPreset']; name: string; desc: string; icon: React.ReactNode }[] = [
     { id: 'auto', name: '智能自适应 (自动辨识屏型)', desc: '横屏自动双栏分屏，竖屏自动单栏垂直排列', icon: <Sparkles className="w-5 h-5" /> },
+    { id: 'four-grid', name: '四方格均衡屏 (2×2 一屏全览)', desc: '左上时间 / 左下农历与名言 / 右上天气 / 右下预报，均衡无溢出', icon: <LayoutGrid className="w-5 h-5 text-emerald-500" /> },
     { id: 'time-focus', name: '巨型时间 Focus (床头/Kindle极简)', desc: '居中超大时间，农历与天气收纳为底部微型标签', icon: <Clock className="w-5 h-5" /> },
-    { id: 'split-dash', name: '左右分屏 Dashboard (工作台大屏)', desc: '左侧大时钟 + 右侧完整农历宜忌与5日天气卡片', icon: <Sliders className="w-5 h-5" /> },
+    { id: 'split-dash', name: '左右双栏 Dashboard (大屏精细)', desc: '左侧时间与农历宜忌 + 右侧完整天气预报', icon: <Sliders className="w-5 h-5" /> },
     { id: 'minimal-dock', name: '底栏极简 Dock (精致摆件)', desc: '顶部清爽时间，底部横向整齐 Dock 收纳栏', icon: <Tv className="w-5 h-5" /> },
     { id: 'vertical-stand', name: '竖屏桌面支架 (手机/平板竖放)', desc: '针对纵向屏幕最佳阅读比例设计的垂直堆叠', icon: <Smartphone className="w-5 h-5" /> },
   ];
