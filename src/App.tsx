@@ -33,6 +33,7 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
+  Share2,
 } from 'lucide-react';
 
 const STORAGE_KEY = 'kindle_desk_standby_settings_v1';
@@ -171,6 +172,43 @@ export default function App() {
   const [kindleFlashActive, setKindleFlashActive] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsExpanded, setControlsExpanded] = useState(false);
+  const [shareToast, setShareToast] = useState<string | null>(null);
+
+  const copyToClipboard = useCallback((text: string) => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        setShareToast('链接已成功复制到剪贴板，快发给朋友吧！');
+        setTimeout(() => setShareToast(null), 3500);
+      }).catch(() => {
+        fallbackCopy(text);
+      });
+    } else {
+      fallbackCopy(text);
+    }
+  }, []);
+
+  const fallbackCopy = (text: string) => {
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setShareToast('链接已成功复制到剪贴板，快发给朋友吧！');
+    } catch {
+      setShareToast('复制失败，请手动复制浏览器地址栏中的链接');
+    }
+    setTimeout(() => setShareToast(null), 3500);
+  };
+
+  const handleShareLink = useCallback(() => {
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const shareText = `推荐一个好用的 Kindle / 平板桌面待机时钟：支持时间、天气、农历节气与历史上的今天！\n${currentUrl}`;
+    copyToClipboard(shareText);
+  }, [copyToClipboard]);
 
   const openCitySettings = useCallback(() => {
     setSettingsTab('city');
@@ -366,13 +404,17 @@ export default function App() {
   }, [settings]);
 
   const leftColModules = useMemo(() => {
-    const leftSet = new Set<ModuleId>(['clock', 'lunar', 'sunTrack']);
-    return activeOrderedModules.filter((id) => leftSet.has(id));
+    const leftPreferredOrder: ModuleId[] = ['clock', 'lunar', 'sunTrack'];
+    const leftSet = new Set<ModuleId>(leftPreferredOrder);
+    const activeLeft = activeOrderedModules.filter((id) => leftSet.has(id));
+    return activeLeft.sort((a, b) => leftPreferredOrder.indexOf(a) - leftPreferredOrder.indexOf(b));
   }, [activeOrderedModules]);
 
   const rightColModules = useMemo(() => {
-    const leftSet = new Set<ModuleId>(['clock', 'lunar', 'sunTrack']);
-    return activeOrderedModules.filter((id) => !leftSet.has(id));
+    const rightPreferredOrder: ModuleId[] = ['weather', 'history', 'news', 'moonPhase', 'tides'];
+    const rightSet = new Set<ModuleId>(rightPreferredOrder);
+    const activeRight = activeOrderedModules.filter((id) => rightSet.has(id));
+    return activeRight.sort((a, b) => rightPreferredOrder.indexOf(a) - rightPreferredOrder.indexOf(b));
   }, [activeOrderedModules]);
 
   const renderModule = useCallback(
@@ -571,6 +613,16 @@ export default function App() {
                 <span>城市: {settings.weatherCity.name}</span>
               </button>
 
+              {/* Share Link */}
+              <button
+                onClick={handleShareLink}
+                className="px-2.5 py-1 rounded-xl border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 font-bold flex items-center gap-1 transition text-emerald-600 dark:text-emerald-400"
+                title="分享链接给朋友"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>分享</span>
+              </button>
+
               {/* Guide */}
               <button
                 onClick={() => setGuideOpen(true)}
@@ -653,6 +705,15 @@ export default function App() {
               className="px-2.5 py-1.5 rounded-xl border border-current/30 hover:bg-current/10 font-medium flex items-center gap-1.5 transition hidden sm:flex"
             >
               <span>主题: {settings.theme}</span>
+            </button>
+
+            <button
+              onClick={handleShareLink}
+              className="px-2.5 py-1.5 rounded-xl border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 font-bold flex items-center gap-1.5 transition text-emerald-600 dark:text-emerald-400"
+              title="分享链接给朋友"
+            >
+              <Share2 className="w-4 h-4" />
+              <span className="hidden sm:inline">分享链接</span>
             </button>
 
             <button
@@ -753,11 +814,20 @@ export default function App() {
         {/* LAYOUT: FOUR-GRID (四方格 2x2 均衡全屏) */}
         {settings.layoutPreset === 'four-grid' && (
           <div id="layout-four-grid" className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6 items-start w-full">
-            {activeOrderedModules.map((id) => (
-              <div key={id} className="w-full flex flex-col items-center">
-                {renderModule(id)}
-              </div>
-            ))}
+            <div className="flex flex-col gap-5 items-center w-full">
+              {leftColModules.map((id) => (
+                <div key={id} className="w-full">
+                  {renderModule(id)}
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-5 items-center w-full">
+              {rightColModules.map((id) => (
+                <div key={id} className="w-full">
+                  {renderModule(id)}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -871,6 +941,15 @@ export default function App() {
             </button>
 
             <button
+              onClick={handleShareLink}
+              className="px-2.5 py-1 rounded-xl border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 font-bold flex items-center gap-1 transition text-emerald-600 dark:text-emerald-400"
+              title="分享链接给朋友"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>分享链接</span>
+            </button>
+
+            <button
               onClick={() => setGuideOpen(true)}
               className="p-1.5 rounded-xl border border-current/30 hover:bg-current/10 transition"
               title="指南"
@@ -942,6 +1021,14 @@ export default function App() {
           </button>
         </div>
       </footer>
+
+      {/* Floating Share Toast Notification */}
+      {shareToast && (
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-2xl flex items-center gap-2 border border-emerald-400 animate-bounce">
+          <Share2 className="w-4 h-4 shrink-0" />
+          <span>{shareToast}</span>
+        </div>
+      )}
 
       {/* Modals & Overlays */}
       <SettingsModal

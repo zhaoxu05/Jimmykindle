@@ -45,24 +45,47 @@ export const LunarDisplay: React.FC<LunarDisplayProps> = ({
           <Calendar className="w-5 h-5 opacity-90" />
           <span>农历 {lunarInfo.lunarMonthDay}</span>
         </div>
-
-        {/* Current Solar Term */}
-        {showSolarTerms && lunarInfo.solarTerm && (
-          <div id="solar-term-current" className={`px-3 py-1 rounded-lg border-2 font-black text-sm ${
-            isEink
-              ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
-              : 'bg-amber-100 dark:bg-amber-950 text-amber-950 dark:text-amber-100 border-amber-500 shadow-xs'
-          }`}>
-            节气：{lunarInfo.solarTerm}
-          </div>
-        )}
       </div>
 
-      {/* Countdowns Row: Next Holiday & Next Solar Term */}
-      <div id="lunar-countdowns-row" className="w-full flex flex-wrap items-center justify-center gap-2.5 text-xs pt-1">
-        {/* Next Holiday Countdown */}
+      {/* Solar Terms Group (Current + Next Solar Term Grouped Together) & Holiday Countdowns */}
+      <div id="lunar-countdowns-row" className="w-full flex flex-col items-center justify-center gap-2.5 text-xs pt-1">
+        {/* Solar Terms Group Container */}
+        {showSolarTerms && (lunarInfo.solarTerm || lunarInfo.nextSolarTerm) && (
+          <div id="solar-terms-combined-group" className={`p-1.5 rounded-2xl border-2 flex flex-row flex-wrap items-center justify-center gap-2 shadow-xs ${
+            isEink
+              ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100'
+              : 'border-amber-500/60 bg-amber-500/10 dark:bg-amber-950/40 text-amber-950 dark:text-amber-100'
+          }`}>
+            {/* Current Solar Term */}
+            {lunarInfo.solarTerm && (
+              <div id="solar-term-current" className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 font-bold ${
+                isEink
+                  ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
+                  : 'bg-amber-500 text-white dark:bg-amber-400 dark:text-black border-amber-600'
+              }`}>
+                <Sparkles className={`w-4 h-4 shrink-0 ${isEink ? 'text-current' : 'text-amber-100 dark:text-amber-900'}`} />
+                <span>当前节气：<strong className="font-black text-sm">{lunarInfo.solarTerm}</strong></span>
+              </div>
+            )}
+
+            {/* Next Solar Term Countdown */}
+            {lunarInfo.nextSolarTerm && (
+              <div id="solar-term-next" className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 font-bold ${
+                isEink
+                  ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100'
+                  : 'bg-amber-100/90 dark:bg-amber-950/90 text-amber-950 dark:text-amber-100 border-amber-400/80'
+              }`}>
+                <span>
+                  距下个节气【<strong>{lunarInfo.nextSolarTerm.name}</strong>】({lunarInfo.nextSolarTerm.dateStr}) 还有 <strong className="font-black text-sm underline underline-offset-2">{lunarInfo.nextSolarTerm.daysLeft}</strong> 天
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Next Holiday Countdown (Displayed AFTER Solar terms) */}
         {showNextHoliday && lunarInfo.nextHoliday && (
-          <div id="next-holiday-badge" className={`px-3 py-1.5 rounded-xl border-2 flex items-center gap-1.5 font-bold shadow-xs ${
+          <div id="next-holiday-badge" className={`px-3 py-1.5 rounded-2xl border-2 flex items-center gap-1.5 font-bold shadow-xs ${
             isEink
               ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100'
               : 'bg-purple-100 dark:bg-purple-950 text-purple-950 dark:text-purple-100 border-purple-400'
@@ -70,20 +93,6 @@ export const LunarDisplay: React.FC<LunarDisplayProps> = ({
             <PartyPopper className={`w-4 h-4 shrink-0 ${isEink ? 'text-current' : 'text-purple-700 dark:text-purple-300'}`} />
             <span>
               距下个假期【<strong>{lunarInfo.nextHoliday.name}</strong>】({lunarInfo.nextHoliday.dateStr}) 还有 <strong className="font-black text-sm underline underline-offset-2">{lunarInfo.nextHoliday.daysLeft}</strong> 天
-            </span>
-          </div>
-        )}
-
-        {/* Next Solar Term Countdown */}
-        {showSolarTerms && lunarInfo.nextSolarTerm && (
-          <div id="solar-term-next" className={`px-3 py-1.5 rounded-xl border-2 flex items-center gap-1.5 font-bold shadow-xs ${
-            isEink
-              ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100'
-              : 'bg-amber-100 dark:bg-amber-950 text-amber-950 dark:text-amber-100 border-amber-400'
-          }`}>
-            <Sparkles className={`w-4 h-4 shrink-0 ${isEink ? 'text-current' : 'text-amber-700 dark:text-amber-300'}`} />
-            <span>
-              距节气【<strong>{lunarInfo.nextSolarTerm.name}</strong>】({lunarInfo.nextSolarTerm.dateStr}) 还有 <strong className="font-black text-sm underline underline-offset-2">{lunarInfo.nextSolarTerm.daysLeft}</strong> 天
             </span>
           </div>
         )}

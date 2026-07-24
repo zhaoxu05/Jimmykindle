@@ -106,13 +106,21 @@
         // Polyfill Object.fromEntries
         if (!Object.fromEntries) {
           Object.fromEntries = function(entries) {
-            if (!entries || !entries[Symbol.iterator]) {
-              throw new TypeError('Object.fromEntries requires an iterable object');
-            }
+            if (!entries) return {};
             var obj = {};
-            for (var pair of entries) {
-              if (Object(pair) !== pair) throw new TypeError('iterable value is not an entry object');
-              obj[pair[0]] = pair[1];
+            if (Array.isArray(entries)) {
+              for (var i = 0; i < entries.length; i++) {
+                var pair = entries[i];
+                if (pair && pair.length >= 2) {
+                  obj[pair[0]] = pair[1];
+                }
+              }
+            } else if (typeof entries.forEach === 'function') {
+              entries.forEach(function(pair) {
+                if (pair && pair.length >= 2) {
+                  obj[pair[0]] = pair[1];
+                }
+              });
             }
             return obj;
           };

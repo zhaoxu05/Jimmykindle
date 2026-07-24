@@ -1,7 +1,20 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig, Plugin} from 'vite';
+
+function kindleLegacyScriptPlugin(): Plugin {
+  return {
+    name: 'kindle-legacy-script-plugin',
+    apply: 'build',
+    transformIndexHtml(html: string) {
+      // Remove type="module" and crossorigin in built bundle so Kindle Experimental Browser executes the JS file
+      return html
+        .replace(/type="module"\s*/g, 'defer ')
+        .replace(/crossorigin\s*/g, '');
+    },
+  };
+}
 
 export default defineConfig(() => {
   return {
@@ -9,6 +22,7 @@ export default defineConfig(() => {
     plugins: [
       react(),
       tailwindcss(),
+      kindleLegacyScriptPlugin(),
     ],
     resolve: {
       alias: {
@@ -18,6 +32,7 @@ export default defineConfig(() => {
     build: {
       target: ['es2015', 'chrome60', 'safari11'],
       cssTarget: ['chrome49', 'safari9'],
+      modulePreload: false,
     },
     esbuild: {
       target: 'es2015',

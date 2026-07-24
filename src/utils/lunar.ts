@@ -15,48 +15,75 @@ export function getLunarInfo(date: Date = new Date()): LunarInfo {
     const lunarDay = lunar.getDayInChinese();
     const lunarMonthDay = `${lunarMonth}${lunarDay}`;
 
-    // Current Solar Term (JieQi)
-    const jieQi = lunar.getJieQi();
-    const solarTerm = jieQi || null;
-
-    // Next Solar Term calculation
+    // Current Solar Term (JieQi) & Next Solar Term calculation
+    let currentSolarTermName: string | null = null;
     let nextSolarTermInfo: { name: string; dateStr: string; daysLeft: number } | null = null;
-    try {
-      const jieQiTable = lunar.getJieQiTable();
-      const nowTs = date.getTime();
-      let smallestDiffMs = Infinity;
-      let nextName = '';
-      let nextDateStr = '';
 
-      if (jieQiTable) {
-        const keys = Object.keys(jieQiTable);
-        for (const name of keys) {
-          const termSolar = jieQiTable[name];
-          if (termSolar) {
-            const termDate = new Date(
-              termSolar.getYear(),
-              termSolar.getMonth() - 1,
-              termSolar.getDay(),
-              termSolar.getHour(),
-              termSolar.getMinute()
-            );
-            const diffMs = termDate.getTime() - nowTs;
-            if (diffMs > 0 && diffMs < smallestDiffMs) {
-              smallestDiffMs = diffMs;
-              nextName = name;
-              nextDateStr = `${termSolar.getMonth()}月${termSolar.getDay()}日`;
-            }
+    try {
+      const nowTs = date.getTime();
+      const allTerms: { name: string; date: Date; dateStr: string }[] = [];
+
+      // Query solar terms table across 3 years (prev, current, next) to handle year transitions smoothly
+      [date.getFullYear() - 1, date.getFullYear(), date.getFullYear() + 1].forEach((year) => {
+        try {
+          const s = Solar.fromYmd(year, 6, 1);
+          const l = s.getLunar();
+          const table = l.getJieQiTable();
+          if (table) {
+            Object.keys(table).forEach((name) => {
+              const termSolar = table[name];
+              if (termSolar) {
+                const termDate = new Date(
+                  termSolar.getYear(),
+                  termSolar.getMonth() - 1,
+                  termSolar.getDay(),
+                  termSolar.getHour(),
+                  termSolar.getMinute(),
+                  termSolar.getSecond()
+                );
+                const dateStr = `${termSolar.getMonth()}月${termSolar.getDay()}日`;
+                allTerms.push({ name, date: termDate, dateStr });
+              }
+            });
           }
+        } catch {
+          // ignore year error
+        }
+      });
+
+      // Deduplicate & sort chronologically
+      allTerms.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+      let pastTerm: { name: string; date: Date; dateStr: string } | null = null;
+      let futureTerm: { name: string; date: Date; dateStr: string } | null = null;
+
+      for (let i = 0; i < allTerms.length; i++) {
+        if (allTerms[i].date.getTime() <= nowTs) {
+          pastTerm = allTerms[i];
+        } else {
+          futureTerm = allTerms[i];
+          break;
         }
       }
 
-      if (nextName && smallestDiffMs !== Infinity) {
-        const daysLeft = Math.ceil(smallestDiffMs / (1000 * 60 * 60 * 24));
-        nextSolarTermInfo = { name: nextName, dateStr: nextDateStr, daysLeft };
+      if (pastTerm) {
+        currentSolarTermName = pastTerm.name;
       }
-    } catch {
-      // Fallback
+
+      if (futureTerm) {
+        const diffMs = futureTerm.date.getTime() - nowTs;
+        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        nextSolarTermInfo = {
+          name: futureTerm.name,
+          dateStr: futureTerm.dateStr,
+          daysLeft,
+        };
+      }
+    } catch (e) {
+      console.error('Failed to compute solar terms:', e);
     }
+
+    const solarTerm = currentSolarTermName || lunar.getJieQi() || null;
 
     // Next Statutory / Traditional Major Holiday calculation (Optimized for Kindle low-power CPU)
     let nextHolidayInfo: { name: string; dateStr: string; daysLeft: number } | null = null;

@@ -94,10 +94,10 @@ export type ModuleId =
 export const ALL_MODULE_IDS: ModuleId[] = [
   'clock',
   'quote',
-  'weather',
   'lunar',
-  'news',
+  'weather',
   'history',
+  'news',
   'sunTrack',
   'moonPhase',
   'tides',
