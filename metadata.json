@@ -1,0 +1,6 @@
+{
+  "name": "待机时钟与天气农历 (Kindle & Desk Standby)",
+  "description": "专为 Kindle、电脑及平板设计的自适应待机时钟，集成中国农历、多源天气(5秒超时自动切源)、独立城市绑定及电子墨水屏防残影优化。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
