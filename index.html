@@ -1,9 +1,94 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+    <title>Kindle 电子墨水屏桌面时钟</title>
+    <script>
+      /* Polyfills for Kindle Voyage / Older WebKit Browsers */
+      (function() {
+        if (typeof window === 'undefined') return;
+        
+        // Polyfill globalThis
+        if (typeof globalThis === 'undefined') {
+          window.globalThis = window;
+        }
+
+        // Polyfill ResizeObserver
+        if (!window.ResizeObserver) {
+          window.ResizeObserver = function(cb) {
+            this.cb = cb;
+            this.observe = function() {};
+            this.unobserve = function() {};
+            this.disconnect = function() {};
+          };
+        }
+
+        // Polyfill IntersectionObserver
+        if (!window.IntersectionObserver) {
+          window.IntersectionObserver = function(cb) {
+            this.cb = cb;
+            this.observe = function() {};
+            this.unobserve = function() {};
+            this.disconnect = function() {};
+          };
+        }
+
+        // Polyfill Element.prototype.animate (Web Animations API used by motion)
+        if (typeof Element !== 'undefined' && !Element.prototype.animate) {
+          Element.prototype.animate = function() {
+            return {
+              play: function() {},
+              pause: function() {},
+              cancel: function() {},
+              finish: function() {},
+              onfinish: null,
+              addEventListener: function() {},
+              removeEventListener: function() {}
+            };
+          };
+        }
+
+        // Polyfill matchMedia
+        if (!window.matchMedia) {
+          window.matchMedia = function() {
+            return {
+              matches: false,
+              media: '',
+              onchange: null,
+              addListener: function() {},
+              removeListener: function() {},
+              addEventListener: function() {},
+              removeEventListener: function() {},
+              dispatchEvent: function() { return false; }
+            };
+          };
+        }
+
+        // Polyfill Promise.prototype.finally
+        if (typeof Promise !== 'undefined' && !Promise.prototype.finally) {
+          Promise.prototype.finally = function(callback) {
+            var P = this.constructor;
+            return this.then(
+              function(value) { return P.resolve(callback()).then(function() { return value; }); },
+              function(reason) { return P.resolve(callback()).then(function() { throw reason; }); }
+            );
+          };
+        }
+
+        // Kindle Error Diagnostic Fallback
+        window.addEventListener('error', function(e) {
+          var root = document.getElementById('root');
+          if (root && (!root.children || root.children.length === 0)) {
+            root.innerHTML = '<div style="padding: 24px; font-family: sans-serif; text-align: center; color: #000; background: #fff;">' +
+              '<h3 style="margin-bottom: 10px;">Kindle 渲染兼容提示</h3>' +
+              '<p style="font-size: 13px; color: #444;">网页加载出现脚本错误: ' + (e.message || '未知错误') + '</p>' +
+              '<button onclick="location.reload()" style="margin-top: 15px; padding: 8px 18px; font-size: 14px; border: 2px solid #000; background: #fff; cursor: pointer;">点击刷新</button>' +
+              '</div>';
+          }
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
