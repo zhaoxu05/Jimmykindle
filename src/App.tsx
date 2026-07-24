@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AppSettings, WeatherData, City, ThemeMode, LayoutPreset, ResolutionPreset } from './types';
 import { DEFAULT_CITIES, fetchWeatherWithFallback } from './services/weatherService';
 import { ClockDisplay } from './components/ClockDisplay';
+import { QuoteDisplay } from './components/QuoteDisplay';
 import { LunarDisplay } from './components/LunarDisplay';
 import { WeatherDisplay } from './components/WeatherDisplay';
 import { SettingsModal } from './components/SettingsModal';
@@ -50,6 +51,10 @@ const DEFAULT_SETTINGS: AppSettings = {
   weatherRefreshMinutes: 30,
   autoSwitchSource: true,
   preferredSourceId: 'auto',
+
+  showQuote: true,
+  quoteSource: 'all',
+  quoteRefreshInterval: 5,
 
   autoKindleRefreshMinutes: 0,
   burnInProtection: false,
@@ -385,6 +390,15 @@ export default function App() {
               resolutionScale={resolutionScale}
             />
 
+            {settings.showQuote && (
+              <QuoteDisplay
+                source={settings.quoteSource}
+                refreshIntervalMinutes={settings.quoteRefreshInterval}
+                isEink={isEink}
+                fontSizeScale={settings.fontSizeScale}
+              />
+            )}
+
             {/* Micro info strip */}
             <div className="flex flex-wrap items-center justify-center gap-3 px-4 py-2.5 rounded-2xl border border-current/20 bg-current/5 text-xs sm:text-sm font-semibold">
               {settings.showLunar && (
@@ -412,7 +426,7 @@ export default function App() {
         {/* LAYOUT 2: MINIMAL DOCK */}
         {settings.layoutPreset === 'minimal-dock' && (
           <div id="layout-minimal-dock" className="flex flex-col items-center justify-between gap-6 py-4">
-            <div className="my-auto">
+            <div className="my-auto flex flex-col items-center justify-center space-y-3">
               <ClockDisplay
                 city={settings.timeCity}
                 use24Hour={settings.use24Hour}
@@ -421,6 +435,14 @@ export default function App() {
                 isEink={isEink}
                 resolutionScale={resolutionScale}
               />
+              {settings.showQuote && (
+                <QuoteDisplay
+                  source={settings.quoteSource}
+                  refreshIntervalMinutes={settings.quoteRefreshInterval}
+                  isEink={isEink}
+                  fontSizeScale={settings.fontSizeScale}
+                />
+              )}
             </div>
 
             {/* Bottom Floating Horizontal Dock */}
@@ -454,7 +476,7 @@ export default function App() {
         {/* LAYOUT 3: SPLIT DASHBOARD */}
         {settings.layoutPreset === 'split-dash' && (
           <div id="layout-split-dash" className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-            <div className="lg:col-span-7 flex flex-col items-center justify-center p-4">
+            <div className="lg:col-span-7 flex flex-col items-center justify-center p-4 space-y-4">
               <ClockDisplay
                 city={settings.timeCity}
                 use24Hour={settings.use24Hour}
@@ -463,6 +485,14 @@ export default function App() {
                 isEink={isEink}
                 resolutionScale={resolutionScale}
               />
+              {settings.showQuote && (
+                <QuoteDisplay
+                  source={settings.quoteSource}
+                  refreshIntervalMinutes={settings.quoteRefreshInterval}
+                  isEink={isEink}
+                  fontSizeScale={settings.fontSizeScale}
+                />
+              )}
             </div>
             <div className="lg:col-span-5 flex flex-col gap-4">
               {settings.showLunar && (
@@ -498,6 +528,14 @@ export default function App() {
               isEink={isEink}
               resolutionScale={resolutionScale}
             />
+            {settings.showQuote && (
+              <QuoteDisplay
+                source={settings.quoteSource}
+                refreshIntervalMinutes={settings.quoteRefreshInterval}
+                isEink={isEink}
+                fontSizeScale={settings.fontSizeScale}
+              />
+            )}
 
             {settings.showLunar && (
               <div className="w-full">
@@ -529,7 +567,7 @@ export default function App() {
         {settings.layoutPreset === 'auto' && (
           isLandscape ? (
             <div id="landscape-grid" className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-              <div className="lg:col-span-7 flex flex-col items-center justify-center p-4">
+              <div className="lg:col-span-7 flex flex-col items-center justify-center p-4 space-y-4">
                 <ClockDisplay
                   city={settings.timeCity}
                   use24Hour={settings.use24Hour}
@@ -538,6 +576,14 @@ export default function App() {
                   isEink={isEink}
                   resolutionScale={resolutionScale}
                 />
+                {settings.showQuote && (
+                  <QuoteDisplay
+                    source={settings.quoteSource}
+                    refreshIntervalMinutes={settings.quoteRefreshInterval}
+                    isEink={isEink}
+                    fontSizeScale={settings.fontSizeScale}
+                  />
+                )}
               </div>
 
               <div className="lg:col-span-5 flex flex-col gap-4">
@@ -572,6 +618,14 @@ export default function App() {
                 isEink={isEink}
                 resolutionScale={resolutionScale}
               />
+              {settings.showQuote && (
+                <QuoteDisplay
+                  source={settings.quoteSource}
+                  refreshIntervalMinutes={settings.quoteRefreshInterval}
+                  isEink={isEink}
+                  fontSizeScale={settings.fontSizeScale}
+                />
+              )}
 
               {settings.showLunar && (
                 <div className="w-full max-w-md">

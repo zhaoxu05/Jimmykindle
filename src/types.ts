@@ -108,6 +108,11 @@ export interface AppSettings {
   autoSwitchSource: boolean; // 5s failover
   preferredSourceId: string; // 'auto' or specific source ID
 
+  // Quote / Motto Settings
+  showQuote: boolean;
+  quoteSource: 'all' | 'hitokoto' | 'shici' | 'quotable' | 'local';
+  quoteRefreshInterval: number; // 0 = manual, 1, 5, 15, 30 min
+
   // Standby & Kindle features
   autoKindleRefreshMinutes: number; // 0 = disabled, 15, 30, 60 min screen inversion to clear eink ghosting
   burnInProtection: boolean; // subtle pixel drift for OLED/PC

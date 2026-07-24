@@ -18,6 +18,8 @@ import {
   Sparkles,
   Monitor,
   Maximize2,
+  Quote as QuoteIcon,
+  BookOpen,
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -343,8 +345,84 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       className="w-4 h-4 accent-emerald-500"
                     />
                   </label>
+                  <label className="flex items-center justify-between p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/5 cursor-pointer font-bold sm:col-span-2">
+                    <span className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                      <QuoteIcon className="w-4 h-4" />
+                      <span>在时间下方显示名人名言 / 每日一言</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={settings.showQuote}
+                      onChange={(e) => onUpdateSettings({ showQuote: e.target.checked })}
+                      className="w-4 h-4 accent-emerald-500"
+                    />
+                  </label>
                 </div>
               </div>
+
+              {/* Quotes Options Detail */}
+              {settings.showQuote && (
+                <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-emerald-500" />
+                      <span>名言开源数据源设置</span>
+                    </label>
+                    <span className="text-xs text-zinc-500">自动离线备用，全网跨域兼容</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {[
+                      { id: 'all', name: '全源随机交替 (推荐)', desc: '融合 一言/古诗词/世界名言/离线精选' },
+                      { id: 'hitokoto', name: 'Hitokoto 一言 API', desc: '动漫、哲学、现代诗歌名句' },
+                      { id: 'shici', name: '今日诗词 API', desc: '中国古代经典名句与诗词歌赋' },
+                      { id: 'quotable', name: 'Quotable 世界名言', desc: '英文哲理名言与思想家金句' },
+                      { id: 'local', name: '离线精选名言库', desc: '无需网络， Kind1e 离线待机首选' },
+                    ].map((qs) => (
+                      <button
+                        key={qs.id}
+                        onClick={() => onUpdateSettings({ quoteSource: qs.id as any })}
+                        className={`p-3 rounded-xl border text-left transition ${
+                          settings.quoteSource === qs.id
+                            ? 'border-emerald-500 bg-emerald-500/10 font-bold'
+                            : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">{qs.name}</span>
+                          {settings.quoteSource === qs.id && <Check className="w-4 h-4 text-emerald-500" />}
+                        </div>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{qs.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <label className="text-xs font-bold text-zinc-600 dark:text-zinc-400">名言定时自动轮播切换频率：</label>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {[
+                        { min: 0, label: '手动点击' },
+                        { min: 1, label: '每 1 分钟' },
+                        { min: 5, label: '每 5 分钟' },
+                        { min: 15, label: '每 15 分钟' },
+                        { min: 30, label: '每 30 分钟' },
+                      ].map((item) => (
+                        <button
+                          key={item.min}
+                          onClick={() => onUpdateSettings({ quoteRefreshInterval: item.min })}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition ${
+                            settings.quoteRefreshInterval === item.min
+                              ? 'border-emerald-500 bg-emerald-500 text-white'
+                              : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400'
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
