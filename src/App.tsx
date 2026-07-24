@@ -88,15 +88,21 @@ const DEFAULT_SETTINGS: AppSettings = {
 };
 
 export default function App() {
-  // Load settings from localStorage
+  // Load settings from localStorage with Kindle auto-detection
   const [settings, setSettings] = useState<AppSettings>(() => {
+    const isKindleUA = typeof navigator !== 'undefined' && /Kindle|Silk|Eink|E-Ink|Book|Voyage/i.test(navigator.userAgent);
+    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const isResetRequested = searchParams ? (searchParams.get('reset') === '1' || searchParams.get('kindle') === '1' || searchParams.get('mode') === 'eink') : false;
+
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
+      if (saved && !isResetRequested) {
         const parsed = JSON.parse(saved);
         return {
           ...DEFAULT_SETTINGS,
           ...parsed,
+          theme: isKindleUA ? 'eink' : (parsed.theme || 'eink'),
+          resolutionPreset: isKindleUA ? 'voyage' : (parsed.resolutionPreset || 'voyage'),
           showSunTrack: parsed.showSunTrack ?? false,
           showMoonPhase: parsed.showMoonPhase ?? false,
           showTides: parsed.showTides ?? false,
@@ -129,6 +135,25 @@ export default function App() {
     setSettings(DEFAULT_SETTINGS);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SETTINGS));
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  // One-click Reset & Lock into Kindle Voyage Optimal Eink Mode
+  const resetToKindleMode = useCallback(() => {
+    const kindleDefaults: AppSettings = {
+      ...DEFAULT_SETTINGS,
+      theme: 'eink',
+      layoutPreset: 'auto',
+      resolutionPreset: 'voyage',
+      noAnimations: true,
+      einkHighContrast: true,
+    };
+    setSettings(kindleDefaults);
+    setSettingsOpen(false);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(kindleDefaults));
     } catch {
       // Ignore
     }
@@ -459,6 +484,20 @@ export default function App() {
         fontSize: resolutionScale > 1 ? `${resolutionScale * 100}%` : undefined,
       }}
     >
+      {/* Pinned Kindle Mode Quick Recovery Button */}
+      <button
+        onClick={resetToKindleMode}
+        id="kindle-quick-recovery-btn"
+        className={`fixed top-3 left-3 z-40 px-2.5 py-1 rounded-lg border-2 font-black text-xs shadow-md opacity-80 hover:opacity-100 flex items-center gap-1 transition cursor-pointer ${
+          isEink
+            ? 'border-zinc-900 dark:border-zinc-100 bg-white dark:bg-black text-black dark:text-white'
+            : 'border-zinc-900 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 dark:border-white'
+        }`}
+        title="如在 Kindle 上误切其他主题或排版导致卡住，点击一秒还原并锁死为 Kindle 最佳高对比黑白模式"
+      >
+        <span>⚡ 还原Kindle屏</span>
+      </button>
+
       {/* Floating Collapsible Control Trigger (if controlBarPosition === 'collapsible') */}
       {settings.controlBarPosition === 'collapsible' && (
         <div id="collapsible-controls-dock" className="fixed top-3 right-3 z-30 transition-all">
@@ -914,6 +953,7 @@ export default function App() {
         sourcesStatus={sourcesStatus}
         onTriggerKindleFlash={() => setKindleFlashActive(true)}
         onResetAllSettings={resetAllSettings}
+        onResetToKindleMode={resetToKindleMode}
         initialTab={settingsTab}
       />
 

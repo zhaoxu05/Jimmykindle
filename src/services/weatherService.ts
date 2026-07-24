@@ -98,19 +98,39 @@ export function degreesToDirection(deg: number): string {
   return directions[index];
 }
 
-// Fetch with strict timeout using AbortController
+// Fetch with strict timeout using safe AbortController guard
 async function fetchWithTimeout(url: string, timeoutMs: number = 5000): Promise<Response> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let controller: AbortController | null = null;
+  let timer: any = null;
+
+  if (typeof AbortController !== 'undefined') {
+    try {
+      controller = new AbortController();
+      timer = setTimeout(() => {
+        try {
+          if (controller && controller.abort) controller.abort();
+        } catch {
+          // Ignore
+        }
+      }, timeoutMs);
+    } catch {
+      // Ignore
+    }
+  }
+
   try {
-    const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
+    const options: RequestInit = {};
+    if (controller && controller.signal) {
+      options.signal = controller.signal;
+    }
+    const response = await fetch(url, options);
+    if (timer) clearTimeout(timer);
     if (!response.ok) {
       throw new Error(`HTTP Error ${response.status}`);
     }
     return response;
   } catch (err: unknown) {
-    clearTimeout(timer);
+    if (timer) clearTimeout(timer);
     if (err instanceof Error && err.name === 'AbortError') {
       throw new Error(`请求超时 (${timeoutMs / 1000}s)`);
     }

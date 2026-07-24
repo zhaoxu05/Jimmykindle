@@ -36,7 +36,7 @@ export async function fetchQuote(source: QuoteSourceType = 'all'): Promise<Quote
 
   try {
     if (chosenSource === 'hitokoto') {
-      const res = await fetch('https://v1.hitokoto.cn/?c=i&c=d&c=h&c=k', { signal: AbortSignal.timeout(3000) });
+      const res = await fetch('https://v1.hitokoto.cn/?c=i&c=d&c=h&c=k');
       if (res.ok) {
         const data = await res.json();
         return {
@@ -47,7 +47,7 @@ export async function fetchQuote(source: QuoteSourceType = 'all'): Promise<Quote
         };
       }
     } else if (chosenSource === 'shici') {
-      const res = await fetch('https://v1.jinrishici.com/all.json', { signal: AbortSignal.timeout(3000) });
+      const res = await fetch('https://v1.jinrishici.com/all.json');
       if (res.ok) {
         const data = await res.json();
         return {
@@ -58,7 +58,7 @@ export async function fetchQuote(source: QuoteSourceType = 'all'): Promise<Quote
         };
       }
     } else if (chosenSource === 'quotable') {
-      const res = await fetch('https://api.quotable.io/random', { signal: AbortSignal.timeout(3000) });
+      const res = await fetch('https://api.quotable.io/random');
       if (res.ok) {
         const data = await res.json();
         return {

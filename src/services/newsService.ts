@@ -32,14 +32,7 @@ export const LOCAL_MIXED_HEADLINES: NewsHeadline[] = [
 export async function fetchNewsHeadlines(): Promise<NewsHeadline[]> {
   // Attempt 1: Try 60s daily news or open RSS endpoints
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-    const res = await fetch('https://60s.v8.345678.xyz/', {
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
+    const res = await fetch('https://60s.v8.345678.xyz/');
     if (res.ok) {
       const data = await res.json();
       if (data && Array.isArray(data.data) && data.data.length > 0) {
@@ -58,12 +51,7 @@ export async function fetchNewsHeadlines(): Promise<NewsHeadline[]> {
 
   // Attempt 2: Try Weibo/Zhihu/V2EX hot list or open headline API
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-    const res = await fetch('https://api.v2ex.com/api/topics/hot.json', { signal: controller.signal });
-    clearTimeout(timeoutId);
-
+    const res = await fetch('https://api.v2ex.com/api/topics/hot.json');
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {

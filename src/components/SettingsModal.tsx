@@ -40,6 +40,7 @@ interface SettingsModalProps {
   sourcesStatus: Record<string, { status: string; msg?: string }>;
   onTriggerKindleFlash: () => void;
   onResetAllSettings?: () => void;
+  onResetToKindleMode?: () => void;
   initialTab?: 'theme' | 'modules' | 'city' | 'weather' | 'kindle';
 }
 
@@ -52,6 +53,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   sourcesStatus,
   onTriggerKindleFlash,
   onResetAllSettings,
+  onResetToKindleMode,
   initialTab,
 }) => {
   const [activeTab, setActiveTab] = useState<'theme' | 'modules' | 'city' | 'weather' | 'kindle'>('theme');

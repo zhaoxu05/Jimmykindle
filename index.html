@@ -49,6 +49,75 @@
           };
         }
 
+        // Polyfill AbortController & AbortSignal
+        if (typeof window.AbortController === 'undefined') {
+          window.AbortController = function AbortController() {
+            this.signal = { aborted: false, addEventListener: function() {}, removeEventListener: function() {} };
+            this.abort = function() { this.signal.aborted = true; };
+          };
+        }
+        if (typeof window.AbortSignal === 'undefined') {
+          window.AbortSignal = {};
+        }
+        if (!window.AbortSignal.timeout) {
+          window.AbortSignal.timeout = function(ms) {
+            var controller = new window.AbortController();
+            setTimeout(function() { controller.abort(); }, ms);
+            return controller.signal;
+          };
+        }
+
+        // Polyfill Intl.DateTimeFormat.prototype.formatToParts
+        if (typeof Intl !== 'undefined' && Intl.DateTimeFormat && !Intl.DateTimeFormat.prototype.formatToParts) {
+          Intl.DateTimeFormat.prototype.formatToParts = function(date) {
+            var formatted = this.format(date);
+            return [
+              { type: 'literal', value: formatted }
+            ];
+          };
+        }
+
+        // Polyfill String.prototype.padStart & padEnd
+        if (!String.prototype.padStart) {
+          String.prototype.padStart = function(targetLength, padString) {
+            targetLength = targetLength >> 0;
+            padString = String(typeof padString !== 'undefined' ? padString : ' ');
+            if (this.length >= targetLength) return String(this);
+            targetLength = targetLength - this.length;
+            if (targetLength > padString.length) {
+              padString += padString.repeat(targetLength / padString.length);
+            }
+            return padString.slice(0, targetLength) + String(this);
+          };
+        }
+        if (!String.prototype.padEnd) {
+          String.prototype.padEnd = function(targetLength, padString) {
+            targetLength = targetLength >> 0;
+            padString = String(typeof padString !== 'undefined' ? padString : ' ');
+            if (this.length >= targetLength) return String(this);
+            targetLength = targetLength - this.length;
+            if (targetLength > padString.length) {
+              padString += padString.repeat(targetLength / padString.length);
+            }
+            return String(this) + padString.slice(0, targetLength);
+          };
+        }
+
+        // Polyfill Object.fromEntries
+        if (!Object.fromEntries) {
+          Object.fromEntries = function(entries) {
+            if (!entries || !entries[Symbol.iterator]) {
+              throw new TypeError('Object.fromEntries requires an iterable object');
+            }
+            var obj = {};
+            for (var pair of entries) {
+              if (Object(pair) !== pair) throw new TypeError('iterable value is not an entry object');
+              obj[pair[0]] = pair[1];
+            }
+            return obj;
+          };
+        }
+
         // Polyfill matchMedia
         if (!window.matchMedia) {
           window.matchMedia = function() {

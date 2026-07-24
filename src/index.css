@@ -22,6 +22,17 @@ html, body {
   color: #ffffff !important;
 }
 
+/* Kindle high-contrast eink mode overrides */
+.theme-eink, [data-theme="eink"] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.theme-eink-inverted, [data-theme="eink-inverted"] {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
 /* Fallback for buttons / borders if oklch fails */
 button, input, select {
   font-family: inherit;

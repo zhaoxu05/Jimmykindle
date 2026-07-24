@@ -26,16 +26,11 @@ export async function fetchHistoryToday(date: Date = new Date()): Promise<Histor
   const day = date.getDate();
   const dateKey = `${month}-${day}`;
 
-  // Attempt 1: Fetch from Wikimedia REST API (100% Free, Keyless, CORS enabled)
+  // Attempt 1: Fetch from Wikimedia REST API
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
-
     const res = await fetch(`https://zh.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`, {
-      signal: controller.signal,
       headers: { 'Accept': 'application/json' },
     });
-    clearTimeout(timeoutId);
 
     if (res.ok) {
       const data = await res.json();
@@ -47,16 +42,12 @@ export async function fetchHistoryToday(date: Date = new Date()): Promise<Histor
       }
     }
   } catch (err) {
-    console.warn('Wikimedia history fetch timed out or failed, trying open API fallback:', err);
+    console.warn('Wikimedia history fetch failed:', err);
   }
 
   // Attempt 2: Try Open China API fallback
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-    const res = await fetch(`https://api.oick.cn/today/api.php`, { signal: controller.signal });
-    clearTimeout(timeoutId);
+    const res = await fetch(`https://api.oick.cn/today/api.php`);
 
     if (res.ok) {
       const text = await res.text();
@@ -82,7 +73,7 @@ export async function fetchHistoryToday(date: Date = new Date()): Promise<Histor
     return OFFLINE_HISTORICAL_EVENTS[dateKey];
   }
 
-  // Generic fallback if date not in offline dictionary
+  // Generic fallback
   return [
     { year: `${date.getFullYear()}年`, title: `历史上今天的重大事件正在同步中...` },
     { year: '1969年', title: '人类首次登月，开启星际探索新纪元' },

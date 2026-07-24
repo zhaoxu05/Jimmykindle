@@ -58,50 +58,52 @@ export function getLunarInfo(date: Date = new Date()): LunarInfo {
       // Fallback
     }
 
-    // Next Statutory / Traditional Major Holiday calculation
+    // Next Statutory / Traditional Major Holiday calculation (Optimized for Kindle low-power CPU)
     let nextHolidayInfo: { name: string; dateStr: string; daysLeft: number } | null = null;
     try {
-      const todayYear = date.getFullYear();
       const todayTs = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+      const currentYear = date.getFullYear();
 
-      // Check upcoming 365 days to find nearest major holiday
-      let minHolidayDiffMs = Infinity;
-      let foundHolidayName = '';
-      let foundHolidayDateStr = '';
+      // Test specific target holiday milestones for current and next year instead of 365-step loop
+      const candidates: { name: string; targetDate: Date }[] = [];
 
-      for (let i = 1; i <= 365; i++) {
-        const checkDate = new Date(todayTs + i * 24 * 60 * 60 * 1000);
-        const checkSolar = Solar.fromDate(checkDate);
-        const checkLunar = checkSolar.getLunar();
+      [currentYear, currentYear + 1].forEach((y) => {
+        // Solar fixed holidays
+        candidates.push({ name: '元旦', targetDate: new Date(y, 0, 1) });
+        candidates.push({ name: '劳动节', targetDate: new Date(y, 4, 1) });
+        candidates.push({ name: '国庆节', targetDate: new Date(y, 9, 1) });
 
-        const lunarFestivals = checkLunar.getFestivals() || [];
-        const solarFestivals = checkSolar.getFestivals() || [];
+        // Lunar variable holidays
+        try {
+          const cChun = Solar.fromYmd(y, 2, 1); // Approx February
+          const cLunar1 = cChun.getLunar();
+          // 春节 (Lunar Month 1 Day 1)
+          const springSolar = cLunar1.getLunarYear() === y 
+            ? cLunar1.getSolar()
+            : Solar.fromDate(new Date(y, 1, 10));
 
-        // Core Chinese statutory holidays
-        let matchedName = '';
-        if (checkSolar.getMonth() === 1 && checkSolar.getDay() === 1) matchedName = '元旦';
-        else if (checkLunar.getMonth() === 1 && checkLunar.getDay() === 1) matchedName = '春节';
-        else if (checkLunar.getJieQi() === '清明') matchedName = '清明节';
-        else if (checkSolar.getMonth() === 5 && checkSolar.getDay() === 1) matchedName = '劳动节';
-        else if (checkLunar.getMonth() === 5 && checkLunar.getDay() === 5) matchedName = '端午节';
-        else if (checkLunar.getMonth() === 8 && checkLunar.getDay() === 15) matchedName = '中秋节';
-        else if (checkSolar.getMonth() === 10 && checkSolar.getDay() === 1) matchedName = '国庆节';
-        else if (lunarFestivals.includes('除夕')) matchedName = '除夕';
+          candidates.push({ name: '春节', targetDate: new Date(y, springSolar.getMonth() - 1, springSolar.getDay()) });
+        } catch {
+          // ignore
+        }
+      });
 
-        if (matchedName) {
-          const diffMs = checkDate.getTime() - todayTs;
-          if (diffMs < minHolidayDiffMs) {
-            minHolidayDiffMs = diffMs;
-            foundHolidayName = matchedName;
-            foundHolidayDateStr = `${checkSolar.getMonth()}月${checkSolar.getDay()}日`;
-            break; // found nearest
-          }
+      let minDiff = Infinity;
+      let nearestName = '';
+      let nearestDateStr = '';
+
+      for (const cand of candidates) {
+        const diffMs = cand.targetDate.getTime() - todayTs;
+        if (diffMs > 0 && diffMs < minDiff) {
+          minDiff = diffMs;
+          nearestName = cand.name;
+          nearestDateStr = `${cand.targetDate.getMonth() + 1}月${cand.targetDate.getDate()}日`;
         }
       }
 
-      if (foundHolidayName && minHolidayDiffMs !== Infinity) {
-        const daysLeft = Math.ceil(minHolidayDiffMs / (1000 * 60 * 60 * 24));
-        nextHolidayInfo = { name: foundHolidayName, dateStr: foundHolidayDateStr, daysLeft };
+      if (nearestName && minDiff !== Infinity) {
+        const daysLeft = Math.ceil(minDiff / (1000 * 60 * 60 * 24));
+        nextHolidayInfo = { name: nearestName, dateStr: nearestDateStr, daysLeft };
       }
     } catch {
       // Fallback
