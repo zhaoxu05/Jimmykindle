@@ -223,24 +223,33 @@
           };
         }
 
-        // Kindle Error Diagnostic Fallback
-        function showKindleError(errMessage) {
-          var root = document.getElementById('root');
-          if (root && (!root.children || root.children.length === 0)) {
-            root.innerHTML = '<div style="padding: 24px; font-family: sans-serif; text-align: center; color: #000; background: #fff;">' +
-              '<h3 style="margin-bottom: 10px;">Kindle 渲染兼容提示</h3>' +
-              '<p style="font-size: 13px; color: #444;">网页加载出现脚本错误: ' + (errMessage || '未知错误') + '</p>' +
-              '<button onclick="location.reload()" style="margin-top: 15px; padding: 8px 18px; font-size: 14px; border: 2px solid #000; background: #fff; cursor: pointer;">点击刷新</button>' +
-              '</div>';
-          }
+        // Polyfill String.prototype.repeat
+        if (!String.prototype.repeat) {
+          String.prototype.repeat = function(count) {
+            count = Math.floor(count);
+            if (this.length === 0 || count <= 0) return '';
+            var result = '';
+            var str = String(this);
+            while (count > 0) {
+              if (count & 1) result += str;
+              count >>= 1;
+              if (count) str += str;
+            }
+            return result;
+          };
         }
 
+        // Silent error handler for Kindle
         window.onerror = function(msg, url, line) {
-          showKindleError(msg + (line ? ' (第' + line + '行)' : ''));
-          return false;
+          if (typeof console !== 'undefined' && console.error) {
+            console.error('Kindle Log Error:', msg, url, line);
+          }
+          return true; // prevent default error dialog
         };
         window.addEventListener('error', function(e) {
-          showKindleError(e.message || e.reason || '解析错误');
+          if (typeof console !== 'undefined' && console.error) {
+            console.error('Kindle Event Error:', e.message || e);
+          }
         });
       })();
     </script>
