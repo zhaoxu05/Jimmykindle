@@ -303,13 +303,12 @@ export default function App() {
   const activeOrderedModules = useMemo(() => {
     const order = ensureCompleteModuleOrder(settings.moduleOrder);
     return order.filter((id) => {
+      if (id === 'quote') return false; // Quote is always grouped directly under Clock
       switch (id) {
         case 'clock':
           return true;
         case 'weather':
           return true;
-        case 'quote':
-          return settings.showQuote;
         case 'lunar':
           return settings.showLunar;
         case 'news':
@@ -343,15 +342,26 @@ export default function App() {
       switch (id) {
         case 'clock':
           return (
-            <ClockDisplay
-              key="clock"
-              city={settings.timeCity}
-              use24Hour={settings.use24Hour}
-              showSeconds={settings.showSeconds}
-              fontSizeScale={settings.fontSizeScale}
-              isEink={isEink}
-              resolutionScale={resolutionScale}
-            />
+            <div key="clock-and-quote" className="w-full flex flex-col items-center justify-center space-y-3">
+              <ClockDisplay
+                key="clock"
+                city={settings.timeCity}
+                use24Hour={settings.use24Hour}
+                showSeconds={settings.showSeconds}
+                fontSizeScale={settings.fontSizeScale}
+                isEink={isEink}
+                resolutionScale={resolutionScale}
+              />
+              {settings.showQuote && (
+                <QuoteDisplay
+                  key="quote"
+                  source={settings.quoteSource}
+                  refreshIntervalMinutes={settings.quoteRefreshInterval}
+                  isEink={isEink}
+                  fontSizeScale={settings.fontSizeScale}
+                />
+              )}
+            </div>
           );
         case 'quote':
           if (!settings.showQuote) return null;
