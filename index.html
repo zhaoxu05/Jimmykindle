@@ -257,65 +257,130 @@
   <body>
     <div id="root">
       <!-- Kindle Voyage / Legacy Browser ES5 Standalone Clock -->
-      <div id="kindle-fallback-clock" style="box-sizing: border-box; width: 100vw; height: 100vh; min-height: 100%; background: #ffffff; color: #000000; font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif; padding: 20px 16px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; border: 4px solid currentColor; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 99999; overflow: hidden;">
-        <!-- Top Info Bar -->
-        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 3px solid currentColor;">
-          <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px;">KINDLE 墨水屏桌面时钟</div>
-          <div id="fallback-weather" style="font-size: 18px; font-weight: bold;">北京 22°C 晴</div>
+      <div id="kindle-fallback-clock" style="box-sizing: border-box; width: 100vw; min-height: 100vh; background-color: #F7EDD3; background-image: radial-gradient(ellipse at center, rgba(253, 248, 235, 0.9) 0%, rgba(247, 237, 211, 0.8) 65%, rgba(224, 208, 170, 0.85) 100%); color: #2C1F14; font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif; padding: 16px 14px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; border: 4px solid #7A6240; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 99999; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+        
+        <!-- Top Info Header -->
+        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 3px solid currentColor; margin-bottom: 12px; font-weight: bold;">
+          <div style="font-size: 16px; letter-spacing: 1px;">KINDLE 墨水屏桌面时钟</div>
+          <div id="fallback-weather" style="font-size: 16px;">北京 22°C 晴</div>
         </div>
 
-        <!-- Center Main Time Display - Expanded to fill screen vertically and horizontally -->
-        <div style="flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px 0;">
-          <!-- Time -->
-          <div id="fallback-time" style="font-size: 110px; font-weight: 900; line-height: 0.95; letter-spacing: -2px; font-family: 'Courier New', Courier, monospace, 'Helvetica Neue', sans-serif; margin-bottom: 24px; font-variant-numeric: tabular-nums;">
+        <!-- Main Content Area -->
+        <div style="flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; margin: 4px 0;">
+          
+          <!-- Giant Main Time Display -->
+          <div id="fallback-time" style="font-size: 130px; font-weight: 900; line-height: 0.9; letter-spacing: -3px; font-family: 'Courier New', Courier, monospace, 'Helvetica Neue', sans-serif; font-variant-numeric: tabular-nums; text-shadow: 1px 1px 0px rgba(0,0,0,0.05);">
             00:00:00
           </div>
 
-          <!-- Date -->
-          <div id="fallback-date" style="font-size: 30px; font-weight: 800; margin-bottom: 20px; letter-spacing: 1px;">
+          <!-- Date & Day -->
+          <div id="fallback-date" style="font-size: 26px; font-weight: 800; letter-spacing: 1px; margin-top: 4px;">
             2026年7月24日 星期五
           </div>
 
-          <!-- Lunar & Solar Term -->
-          <div id="fallback-lunar" style="font-size: 22px; font-weight: bold; border: 3px solid currentColor; display: inline-block; padding: 8px 24px; background: transparent;">
+          <!-- Lunar & Solar Term Badge -->
+          <div id="fallback-lunar" style="font-size: 18px; font-weight: bold; border: 2px solid currentColor; display: inline-block; padding: 6px 20px; background: rgba(255,255,255,0.4); margin-bottom: 4px;">
             农历六月十一 · 夏秋之交
           </div>
+
+          <!-- Card Section (World Clocks, Poetry, History Today, Countdown) -->
+          <div id="fallback-cards-container" style="width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+            
+            <!-- Poetry & Motto Card -->
+            <div style="border: 2px solid currentColor; padding: 10px 14px; background: rgba(255,255,255,0.4); text-align: center; position: relative;">
+              <div style="font-size: 12px; font-weight: bold; opacity: 0.8; letter-spacing: 1px; margin-bottom: 4px;">📜 诗词金句</div>
+              <div id="fallback-poem-text" style="font-size: 16px; font-weight: bold; line-height: 1.4;">
+                落霞与孤鹜齐飞，秋水共长天一色。
+              </div>
+              <div id="fallback-poem-author" style="font-size: 12px; opacity: 0.85; margin-top: 3px;">
+                —— 王勃《滕王阁序》
+              </div>
+              <button onclick="nextFallbackPoem()" style="position: absolute; right: 8px; top: 8px; font-size: 11px; padding: 2px 8px; border: 1px solid currentColor; background: transparent; cursor: pointer;">换一首</button>
+            </div>
+
+            <!-- World Clocks & Countdown Row -->
+            <div style="display: flex; gap: 8px; width: 100%;">
+              <!-- World Clocks Card -->
+              <div style="flex: 1; border: 2px solid currentColor; padding: 8px 10px; background: rgba(255,255,255,0.4); text-align: left;">
+                <div style="font-size: 12px; font-weight: bold; opacity: 0.8; margin-bottom: 4px;">🌍 世界时钟</div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-bottom: 2px;">
+                  <span>伦敦 (UTC+0)</span> <span id="fallback-tz-london">03:14</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-bottom: 2px;">
+                  <span>纽约 (UTC-4)</span> <span id="fallback-tz-ny">22:14</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                  <span>东京 (UTC+9)</span> <span id="fallback-tz-tokyo">11:14</span>
+                </div>
+              </div>
+
+              <!-- Countdown Card -->
+              <div style="flex: 1; border: 2px solid currentColor; padding: 8px 10px; background: rgba(255,255,255,0.4); text-align: left;">
+                <div style="font-size: 12px; font-weight: bold; opacity: 0.8; margin-bottom: 4px;">⏳ 倒计时</div>
+                <div id="fallback-countdowns" style="font-size: 13px; font-weight: bold; line-height: 1.5;">
+                  <div>距周末: <span id="cd-weekend">2天</span></div>
+                  <div>距考研: <span id="cd-kaoyan">153天</span></div>
+                  <div>距新年: <span id="cd-newyear">161天</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- History Today Card -->
+            <div style="border: 2px solid currentColor; padding: 8px 12px; background: rgba(255,255,255,0.4); text-align: left;">
+              <div style="font-size: 12px; font-weight: bold; opacity: 0.8; margin-bottom: 4px;">📅 历史上的今天</div>
+              <div id="fallback-history-text" style="font-size: 13px; font-weight: bold; line-height: 1.4;">
+                1969年 - 阿波罗11号成功完成人类首次登月任务。
+              </div>
+            </div>
+
+          </div>
+
         </div>
 
         <!-- Bottom Action Bar & Status -->
-        <div style="width: 100%; padding-top: 14px; border-top: 3px solid currentColor; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-          <div id="fallback-status" style="font-size: 14px; font-weight: bold;">
-            已开启 Kindle Voyage 原生兼容模式
+        <div style="width: 100%; padding-top: 10px; border-top: 3px solid currentColor; margin-top: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <div id="fallback-status" style="font-size: 12px; font-weight: bold;">
+            Kindle Voyage 原生 ES5 增强模式 · 全功能桌面
           </div>
 
-          <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-            <button onclick="location.reload()" style="padding: 8px 16px; font-size: 14px; font-weight: bold; border: 2px solid currentColor; background: transparent; color: inherit; cursor: pointer;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+            <button onclick="location.reload()" style="padding: 6px 12px; font-size: 13px; font-weight: bold; border: 2px solid currentColor; background: transparent; color: inherit; cursor: pointer;">
               刷新页面
             </button>
-            <button id="fallback-theme-btn" onclick="cycleFallbackTheme()" style="padding: 8px 16px; font-size: 14px; font-weight: bold; border: 2px solid currentColor; background: transparent; color: inherit; cursor: pointer;">
-              📜 羊皮纸模式
+            <button id="fallback-theme-btn" onclick="cycleFallbackTheme()" style="padding: 6px 12px; font-size: 13px; font-weight: bold; border: 2px solid currentColor; background: transparent; color: inherit; cursor: pointer;">
+              📜 浅仿古羊皮纸 (#F7EDD3)
             </button>
-            <button onclick="openFallbackChangelog()" style="padding: 8px 16px; font-size: 14px; font-weight: bold; border: 2px solid currentColor; background: transparent; color: inherit; cursor: pointer;">
+            <button onclick="toggleFallbackCardsMode()" id="fallback-toggle-cards-btn" style="padding: 6px 12px; font-size: 13px; font-weight: bold; border: 2px solid currentColor; background: transparent; color: inherit; cursor: pointer;">
+              布局: 全功能面板
+            </button>
+            <button onclick="triggerKindleAntiGhosting()" style="padding: 6px 12px; font-size: 13px; font-weight: bold; border: 2px solid currentColor; background: transparent; color: inherit; cursor: pointer;">
+              ⚡ 刷屏防残影
+            </button>
+            <button onclick="openFallbackChangelog()" style="padding: 6px 12px; font-size: 13px; font-weight: bold; border: 2px solid currentColor; background: transparent; color: inherit; cursor: pointer;">
               v1.4.0 日志
             </button>
           </div>
         </div>
 
+        <!-- Anti Ghosting Fullscreen Flash Overlay -->
+        <div id="kindle-flash-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000000; z-index: 100001;"></div>
+
         <!-- ES5 Fallback Changelog Modal -->
         <div id="fallback-changelog-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 100000; padding: 15px; box-sizing: border-box; overflow-y: auto;">
           <div style="background: #ffffff; color: #000000; border: 4px solid #000000; max-width: 600px; margin: 10px auto; padding: 20px; font-family: sans-serif; text-align: left;">
-            <div style="display: flex; justify-between: center; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
               <h2 style="margin: 0; font-size: 18px; font-weight: bold;">版本更新历史 (Changelog)</h2>
               <button onclick="closeFallbackChangelog()" style="padding: 6px 12px; font-weight: bold; border: 2px solid #000; background: #000; color: #fff; cursor: pointer;">关闭</button>
             </div>
             
             <div style="margin-bottom: 16px; border-bottom: 1px dashed #666; padding-bottom: 12px;">
               <div style="font-size: 15px; font-weight: bold; color: #000;">v1.4.0 (2026-07-24) - 当前最新大版本</div>
-              <p style="font-size: 13px; margin: 4px 0; font-weight: bold;">Kindle Voyage 原生 ES5 兼容引擎与全屏字体排版与羊皮纸纹理升级</p>
+              <p style="font-size: 13px; margin: 4px 0; font-weight: bold;">Kindle 原生 ES5 全卡片桌面与浅仿古羊皮纸 (#F7EDD3) 升级</p>
               <ul style="font-size: 12px; padding-left: 18px; margin: 4px 0; line-height: 1.5;">
-                <li>全面充实 Kindle 屏幕空间，时间与日期字号动态放大居中全屏填充。</li>
-                <li>新增真实羊皮纸暖色微黄质感与复古纸张微纹理模式。</li>
-                <li>支持 ☀️ 柔白 / 📜 羊皮纸 / 🌙 墨黑 三挡快速切换。</li>
+                <li>完美移植古诗词金句、历史上的今天、世界时钟与倒计时到 Kindle Voyage 引擎。</li>
+                <li>时间与日期字号震撼自适应放大，全屏充满不再留白。</li>
+                <li>采用浅仿古羊皮纸 HEX: #F7EDD3 (RGB 247, 237, 211) 精准质感配色。</li>
+                <li>内置全屏黑白反转刷屏功能，有效消除 Ink 墨水屏残影。</li>
               </ul>
             </div>
 
@@ -323,9 +388,9 @@
               <div style="font-size: 14px; font-weight: bold; color: #333;">v1.3.0 (2026-07-20)</div>
               <p style="font-size: 12px; margin: 4px 0; font-weight: bold;">多源天气容灾与墨水屏防残影刷屏增强</p>
               <ul style="font-size: 12px; padding-left: 18px; margin: 4px 0; line-height: 1.5;">
-                <li>多天气 API 智能故障容灾切换。</li>
-                <li>支持 1/5/10/30 分钟定时全屏黑白反转刷屏清除墨水屏残影。</li>
-                <li>农历、黄历与节气计算逻辑优化。</li>
+                <li>集成 Open-Meteo / wttr.in 多数据源自动容灾。</li>
+                <li>支持 1/5/10/30 分钟全屏黑白反转闪烁刷屏。</li>
+                <li>农历黄历算法与节假日倒计时升级。</li>
               </ul>
             </div>
 
@@ -333,14 +398,29 @@
               <div style="font-size: 14px; font-weight: bold; color: #333;">v1.2.0 (2026-07-15)</div>
               <p style="font-size: 12px; margin: 4px 0; font-weight: bold;">世界时钟、诗词金句与 Ink 主题套件</p>
               <ul style="font-size: 12px; padding-left: 18px; margin: 4px 0; line-height: 1.5;">
-                <li>新增副时区世界时钟，古诗词/名言警句轮播。</li>
-                <li>优化 Eink 高对比度黑白与羊皮纸质感主题。</li>
+                <li>支持副时区（世界时钟）对比显示。</li>
+                <li>集成精选古诗词与励志金句卡片。</li>
+                <li>新增 Eink 高对比度黑白与羊皮纸等主题。</li>
+              </ul>
+            </div>
+
+            <div style="margin-bottom: 16px; border-bottom: 1px dashed #666; padding-bottom: 12px;">
+              <div style="font-size: 14px; font-weight: bold; color: #333;">v1.1.0 (2026-07-08)</div>
+              <p style="font-size: 12px; margin: 4px 0; font-weight: bold;">历史上的今天与模块自由排版</p>
+              <ul style="font-size: 12px; padding-left: 18px; margin: 4px 0; line-height: 1.5;">
+                <li>新增“历史上的今天”经典回顾模块。</li>
+                <li>自由勾选/隐藏各个功能卡片。</li>
+                <li>支持四宫格与紧凑型自适应布局。</li>
               </ul>
             </div>
 
             <div style="margin-bottom: 12px;">
-              <div style="font-size: 14px; font-weight: bold; color: #333;">v1.1.0 & v1.0.0 (2026-07-01 ~ 07-08)</div>
-              <p style="font-size: 12px; margin: 4px 0;">基础桌面时钟发布，历史上的今天与自由卡片排版模式。</p>
+              <div style="font-size: 14px; font-weight: bold; color: #333;">v1.0.0 (2026-07-01)</div>
+              <p style="font-size: 12px; margin: 4px 0; font-weight: bold;">Kindle Desk Standby 电子书桌待机时钟首发</p>
+              <ul style="font-size: 12px; padding-left: 18px; margin: 4px 0; line-height: 1.5;">
+                <li>大字体无干扰数字时钟与日期。</li>
+                <li>全屏网页适配与低功耗极简设计。</li>
+              </ul>
             </div>
 
             <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 2px solid #000;">
@@ -351,19 +431,41 @@
       </div>
 
       <script>
-        /* ES5 Standalone Clock Script for Kindle Voyage */
+        /* ES5 Standalone Full-Feature Clock Script for Kindle Voyage */
         (function() {
-          var currentThemeIndex = 0; // 0: White, 1: Parchment, 2: Dark
+          var currentThemeIndex = 1; // 0: White, 1: Parchment (#F7EDD3), 2: Dark
+          var showCards = true;
+
           var themes = [
             { name: '☀️ 柔白模式', bg: '#ffffff', color: '#000000', border: '#000000', bgImg: 'none' },
             { 
-              name: '📜 羊皮纸模式', 
-              bg: '#eee1ba', 
-              color: '#2e1d11', 
-              border: '#7a6240', 
-              bgImg: 'radial-gradient(ellipse at center, rgba(248, 242, 222, 0.85) 0%, rgba(230, 215, 175, 0.75) 65%, rgba(195, 172, 122, 0.85) 100%), url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.09\'/%3E%3C/svg%3E")' 
+              name: '📜 浅仿古羊皮纸 (#F7EDD3)', 
+              bg: '#F7EDD3', 
+              color: '#2C1F14', 
+              border: '#7A6240', 
+              bgImg: 'radial-gradient(ellipse at center, rgba(253, 248, 235, 0.9) 0%, rgba(247, 237, 211, 0.8) 65%, rgba(224, 208, 170, 0.85) 100%), url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.08\'/%3E%3C/svg%3E")' 
             },
             { name: '🌙 墨黑模式', bg: '#000000', color: '#ffffff', border: '#ffffff', bgImg: 'none' }
+          ];
+
+          var poems = [
+            { text: '落霞与孤鹜齐飞，秋水共长天一色。', author: '王勃《滕王阁序》' },
+            { text: '星光不问赶路人，岁月不负有心人。', author: '汪国真《热爱生命》' },
+            { text: '明月松间照，清泉石上流。', author: '王维《山居秋暝》' },
+            { text: '博学而笃志，切问而近思。', author: '《论语·子张》' },
+            { text: '大漠孤烟直，长河落日圆。', author: '王维《使至塞上》' },
+            { text: '长风破浪会有时，直挂云帆济沧海。', author: '李白《行路难》' },
+            { text: '海内存知己，天涯若比邻。', author: '王勃《送杜少府之任蜀州》' },
+            { text: '行到水穷处，坐看云起时。', author: '王维《终南别业》' }
+          ];
+          var currentPoemIdx = 0;
+
+          var historyTodayEvents = [
+            '1969年 - 阿波罗11号成功完成人类首次登月任务。',
+            '1911年 - 探险家海拉姆·班厄姆发现失落的印加古城马丘比丘。',
+            '1900年 - 第二届现代奥林匹克运动会在法国巴黎开幕。',
+            '1802年 - 法国大作家大仲马诞辰，《基督山伯爵》作者。',
+            '1927年 - 著名作家芥川龙之介逝世，代表作《罗生门》。'
           ];
 
           function autoScaleFontSize() {
@@ -372,10 +474,17 @@
             var w = window.innerWidth || document.documentElement.clientWidth || 800;
             var h = window.innerHeight || document.documentElement.clientHeight || 1000;
             
-            // Compute font size so time dominates the screen in both portrait and landscape
-            var calcSize = Math.floor(Math.min(w * 0.17, h * 0.20));
-            if (calcSize < 75) calcSize = 75;
-            if (calcSize > 220) calcSize = 220;
+            // Adjust time font size depending on whether full cards or giant time mode is on
+            var calcSize;
+            if (showCards) {
+              calcSize = Math.floor(Math.min(w * 0.16, h * 0.14));
+              if (calcSize < 80) calcSize = 80;
+              if (calcSize > 130) calcSize = 130;
+            } else {
+              calcSize = Math.floor(Math.min(w * 0.22, h * 0.24));
+              if (calcSize < 110) calcSize = 110;
+              if (calcSize > 210) calcSize = 210;
+            }
             timeElem.style.fontSize = calcSize + 'px';
           }
 
@@ -410,7 +519,69 @@
               var currentTerm = solarTerms[termIndex % 24];
               lunarElem.innerHTML = '农历' + lunarMonths[(month - 1) % 12] + '月' + lunarDays[(date - 1) % 30] + ' · ' + currentTerm;
             }
+
+            // Update World Clocks
+            updateWorldClocks(now);
+            // Update Countdowns
+            updateCountdowns(now);
           }
+
+          function updateWorldClocks(now) {
+            var utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+            
+            // London UTC+0
+            var londonDate = new Date(utcTime);
+            var lonH = (londonDate.getHours() < 10 ? '0' : '') + londonDate.getHours();
+            var lonM = (londonDate.getMinutes() < 10 ? '0' : '') + londonDate.getMinutes();
+            var lonElem = document.getElementById('fallback-tz-london');
+            if (lonElem) lonElem.innerHTML = lonH + ':' + lonM;
+
+            // New York UTC-4
+            var nyDate = new Date(utcTime - (4 * 3600000));
+            var nyH = (nyDate.getHours() < 10 ? '0' : '') + nyDate.getHours();
+            var nyM = (nyDate.getMinutes() < 10 ? '0' : '') + nyDate.getMinutes();
+            var nyElem = document.getElementById('fallback-tz-ny');
+            if (nyElem) nyElem.innerHTML = nyH + ':' + nyM;
+
+            // Tokyo UTC+9
+            var tokyoDate = new Date(utcTime + (9 * 3600000));
+            var tokH = (tokyoDate.getHours() < 10 ? '0' : '') + tokyoDate.getHours();
+            var tokM = (tokyoDate.getMinutes() < 10 ? '0' : '') + tokyoDate.getMinutes();
+            var tokElem = document.getElementById('fallback-tz-tokyo');
+            if (tokElem) tokElem.innerHTML = tokH + ':' + tokM;
+          }
+
+          function updateCountdowns(now) {
+            // Days to weekend (Saturday)
+            var dayOfWeek = now.getDay();
+            var daysToSat = (6 - dayOfWeek + 7) % 7;
+            if (daysToSat === 0) daysToSat = '今天周末!';
+            else daysToSat = daysToSat + '天';
+            var cdSatElem = document.getElementById('cd-weekend');
+            if (cdSatElem) cdSatElem.innerHTML = daysToSat;
+
+            // Days to Kaoyan (Dec 25)
+            var targetKaoyan = new Date(now.getFullYear(), 11, 25);
+            if (now > targetKaoyan) targetKaoyan = new Date(now.getFullYear() + 1, 11, 25);
+            var diffKy = Math.ceil((targetKaoyan.getTime() - now.getTime()) / (1000 * 3600 * 24));
+            var cdKyElem = document.getElementById('cd-kaoyan');
+            if (cdKyElem) cdKyElem.innerHTML = diffKy + '天';
+
+            // Days to New Year (Jan 1)
+            var targetNY = new Date(now.getFullYear() + 1, 0, 1);
+            var diffNy = Math.ceil((targetNY.getTime() - now.getTime()) / (1000 * 3600 * 24));
+            var cdNyElem = document.getElementById('cd-newyear');
+            if (cdNyElem) cdNyElem.innerHTML = diffNy + '天';
+          }
+
+          window.nextFallbackPoem = function() {
+            currentPoemIdx = (currentPoemIdx + 1) % poems.length;
+            var poem = poems[currentPoemIdx];
+            var tElem = document.getElementById('fallback-poem-text');
+            var aElem = document.getElementById('fallback-poem-author');
+            if (tElem) tElem.innerHTML = poem.text;
+            if (aElem) aElem.innerHTML = '—— ' + poem.author;
+          };
 
           function fetchFallbackWeather() {
             try {
@@ -469,9 +640,35 @@
             clockElem.style.borderColor = t.border;
             if (btnElem) {
               var nextT = themes[(idx + 1) % themes.length];
-              btnElem.innerHTML = nextT.name;
+              btnElem.innerHTML = t.name;
             }
           }
+
+          window.toggleFallbackCardsMode = function() {
+            showCards = !showCards;
+            var container = document.getElementById('fallback-cards-container');
+            var btn = document.getElementById('fallback-toggle-cards-btn');
+            if (container) {
+              container.style.display = showCards ? 'flex' : 'none';
+            }
+            if (btn) {
+              btn.innerHTML = showCards ? '布局: 全功能面板' : '布局: 极简巨型字';
+            }
+            autoScaleFontSize();
+          };
+
+          window.triggerKindleAntiGhosting = function() {
+            var flash = document.getElementById('kindle-flash-overlay');
+            if (!flash) return;
+            flash.style.display = 'block';
+            setTimeout(function() {
+              flash.style.background = '#ffffff';
+              setTimeout(function() {
+                flash.style.display = 'none';
+                flash.style.background = '#000000';
+              }, 400);
+            }, 400);
+          };
 
           window.openFallbackChangelog = function() {
             var modal = document.getElementById('fallback-changelog-modal');
@@ -487,6 +684,21 @@
             window.addEventListener('resize', autoScaleFontSize);
           }
 
+          // Randomize poem on init
+          var randIdx = Math.floor(Math.random() * poems.length);
+          currentPoemIdx = randIdx;
+          var poem = poems[currentPoemIdx];
+          var tElem = document.getElementById('fallback-poem-text');
+          var aElem = document.getElementById('fallback-poem-author');
+          if (tElem) tElem.innerHTML = poem.text;
+          if (aElem) aElem.innerHTML = '—— ' + poem.author;
+
+          // History today event
+          var histIdx = Math.floor(Math.random() * historyTodayEvents.length);
+          var hElem = document.getElementById('fallback-history-text');
+          if (hElem) hElem.innerHTML = historyTodayEvents[histIdx];
+
+          applyFallbackTheme(1); // Default to Parchment #F7EDD3
           updateFallbackClock();
           autoScaleFontSize();
           fetchFallbackWeather();

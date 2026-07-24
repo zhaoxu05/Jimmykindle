@@ -15,18 +15,19 @@ export const VERSION_LOGS: VersionLog[] = [
   {
     version: 'v1.4.0',
     date: '2026-07-24',
-    title: 'Kindle Voyage 原生 ES5 兼容引擎与全平台抗白屏升级',
+    title: 'Kindle 原生 ES5 全卡片桌面与浅仿古羊皮纸 (#F7EDD3) 升级',
     badge: '最新大版本',
     isLatest: true,
     highlights: [
-      '新增 Kindle Voyage / 老旧设备 ES5 独立渲染引擎',
-      '无缝自动降级与静默抗白屏保障',
-      '新增多版本更新日志交互弹窗'
+      '完美移植古诗词金句、历史上的今天、世界时钟与倒计时到 Kindle Voyage 引擎',
+      '时间与日期字号震撼自适应放大，全屏充满不再留白',
+      '采用浅仿古羊皮纸 HEX: #F7EDD3 (RGB 247, 237, 211) 精准质感配色',
+      '内置全屏黑白反转刷屏功能，有效消除 Ink 墨水屏残影'
     ],
     details: [
-      '彻底解决 Kindle Voyage、Paperwhite 3 等早期 Kindle 浏览器无法运行 ES6+/React Module 导致的 SyntaxError 脚本错误与白屏提示。',
-      '静态 HTML 层内置独立 ES5 极简电子时钟、日期、农历与离线天气存储，无需高版本 JS 引擎即可秒开静置。',
-      '优化系统防残影刷屏机制与网络异常离线容灾。'
+      '全面优化 Kindle Voyage、Paperwhite 等早期 Kindle 设备的静态 ES5 独立引擎。',
+      '在无高版本 JS 引擎前提下，完美实现时间居中震撼放大、浅仿古羊皮纸纹理、诗词金句轮播、世界时钟与倒计时全功能渲染。',
+      '静态 HTML 层内置独立离线天气、农历二十四节气与防残影刷屏冲刷机制。'
     ]
   },
   {
