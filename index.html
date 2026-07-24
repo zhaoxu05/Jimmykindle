@@ -255,7 +255,169 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Kindle Voyage / Legacy Browser ES5 Standalone Clock -->
+      <div id="kindle-fallback-clock" style="box-sizing: border-box; width: 100vw; min-height: 100vh; background: #ffffff; color: #000000; font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif; padding: 24px 20px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; border: 4px solid #000000; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 99999; overflow: hidden;">
+        <!-- Top Info Bar -->
+        <div style="width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 2px solid #000000; margin-bottom: 15px;">
+          <div style="font-size: 16px; font-weight: bold; letter-spacing: 1px;">KINDLE 墨水屏桌面时钟</div>
+          <div id="fallback-weather" style="font-size: 16px; font-weight: bold;">北京 22°C 晴</div>
+        </div>
+
+        <!-- Center Main Time Display -->
+        <div style="margin: auto 0; padding: 10px 0; width: 100%; max-width: 800px;">
+          <!-- Time -->
+          <div id="fallback-time" style="font-size: 80px; font-weight: 800; line-height: 1.1; letter-spacing: -2px; font-family: 'Courier New', Courier, monospace, sans-serif; margin-bottom: 15px;">
+            00:00:00
+          </div>
+
+          <!-- Date -->
+          <div id="fallback-date" style="font-size: 24px; font-weight: bold; margin-bottom: 16px; letter-spacing: 1px;">
+            2026年7月24日 星期五
+          </div>
+
+          <!-- Lunar & Solar Term -->
+          <div id="fallback-lunar" style="font-size: 18px; font-weight: bold; border: 2px solid #000000; display: inline-block; padding: 6px 20px; background: #ffffff; color: #000000;">
+            农历六月十一 · 夏秋之交
+          </div>
+        </div>
+
+        <!-- Bottom Action Bar & Status -->
+        <div style="width: 100%; max-width: 800px; padding-top: 15px; border-top: 2px solid #000000; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+          <div id="fallback-status" style="font-size: 13px; font-weight: bold; color: #222222;">
+            已开启 Kindle Voyage 兼容渲染模式
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 4px;">
+            <button onclick="location.reload()" style="padding: 8px 18px; font-size: 14px; font-weight: bold; border: 2px solid #000000; background: #ffffff; color: #000000; cursor: pointer;">
+              刷新页面
+            </button>
+            <button id="fallback-toggle-mode" onclick="toggleFallbackMode()" style="padding: 8px 18px; font-size: 14px; font-weight: bold; border: 2px solid #000000; background: #000000; color: #ffffff; cursor: pointer;">
+              夜间黑底
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        /* ES5 Standalone Clock Script for Kindle Voyage */
+        (function() {
+          function updateFallbackClock() {
+            var now = new Date();
+            var hours = (now.getHours() < 10 ? '0' : '') + now.getHours();
+            var minutes = (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+            var seconds = (now.getSeconds() < 10 ? '0' : '') + now.getSeconds();
+            var timeElem = document.getElementById('fallback-time');
+            if (timeElem) {
+              timeElem.innerHTML = hours + ':' + minutes + ':' + seconds;
+            }
+
+            var year = now.getFullYear();
+            var month = now.getMonth() + 1;
+            var date = now.getDate();
+            var days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            var dayStr = days[now.getDay()];
+            var dateElem = document.getElementById('fallback-date');
+            if (dateElem) {
+              dateElem.innerHTML = year + '年' + month + '月' + date + '日 ' + dayStr;
+            }
+
+            var lunarElem = document.getElementById('fallback-lunar');
+            if (lunarElem) {
+              var lunarMonths = ['正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '腊'];
+              var lunarDays = ['初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
+                               '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+                               '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+              var solarTerms = ['小寒', '大寒', '立春', '雨水', '惊蛰', '春分', '清明', '谷雨', '立夏', '小满', '芒种', '夏至', '小暑', '大暑', '立秋', '处暑', '白露', '秋分', '寒露', '霜降', '立冬', '小雪', '大雪', '冬至'];
+              var termIndex = Math.floor((month - 1) * 2 + (date > 15 ? 1 : 0));
+              var currentTerm = solarTerms[termIndex % 24];
+              lunarElem.innerHTML = '农历' + lunarMonths[(month - 1) % 12] + '月' + lunarDays[(date - 1) % 30] + ' · ' + currentTerm;
+            }
+          }
+
+          function fetchFallbackWeather() {
+            try {
+              var stored = localStorage.getItem('kindle_desk_standby_settings_v1');
+              var cityName = '北京';
+              if (stored) {
+                var data = JSON.parse(stored);
+                if (data && data.weatherCity && data.weatherCity.name) {
+                  cityName = data.weatherCity.name;
+                }
+              }
+
+              var cachedW = localStorage.getItem('kindle_fallback_weather_cache');
+              if (cachedW) {
+                var parsedW = JSON.parse(cachedW);
+                if (parsedW && parsedW.text && (new Date().getTime() - parsedW.time < 3600000)) {
+                  var wElem = document.getElementById('fallback-weather');
+                  if (wElem) wElem.innerHTML = parsedW.text;
+                  return;
+                }
+              }
+
+              var xhr = new XMLHttpRequest();
+              xhr.open('GET', 'https://wttr.in/' + encodeURIComponent(cityName) + '?format=%l:+%t+%C&lang=zh', true);
+              xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                  var resp = xhr.responseText || '';
+                  if (resp && resp.length < 50) {
+                    var cleanResp = resp.replace(/\+/g, ' ').trim();
+                    var wElem = document.getElementById('fallback-weather');
+                    if (wElem) wElem.innerHTML = cleanResp;
+                    localStorage.setItem('kindle_fallback_weather_cache', JSON.stringify({
+                      text: cleanResp,
+                      time: new Date().getTime()
+                    }));
+                  }
+                }
+              };
+              xhr.send();
+            } catch(e) {}
+          }
+
+          window.toggleFallbackMode = function() {
+            var clockElem = document.getElementById('kindle-fallback-clock');
+            var btnElem = document.getElementById('fallback-toggle-mode');
+            var lunarElem = document.getElementById('fallback-lunar');
+            if (!clockElem) return;
+
+            var isDark = clockElem.style.background === 'rgb(0, 0, 0)' || clockElem.style.background === '#000000' || clockElem.style.background === 'black';
+            if (isDark) {
+              clockElem.style.background = '#ffffff';
+              clockElem.style.color = '#000000';
+              if (btnElem) {
+                btnElem.style.background = '#000000';
+                btnElem.style.color = '#ffffff';
+                btnElem.innerHTML = '夜间黑底';
+              }
+              if (lunarElem) {
+                lunarElem.style.background = '#ffffff';
+                lunarElem.style.color = '#000000';
+                lunarElem.style.border = '2px solid #000000';
+              }
+            } else {
+              clockElem.style.background = '#000000';
+              clockElem.style.color = '#ffffff';
+              if (btnElem) {
+                btnElem.style.background = '#ffffff';
+                btnElem.style.color = '#000000';
+                btnElem.innerHTML = '日间白底';
+              }
+              if (lunarElem) {
+                lunarElem.style.background = '#000000';
+                lunarElem.style.color = '#ffffff';
+                lunarElem.style.border = '2px solid #ffffff';
+              }
+            }
+          };
+
+          updateFallbackClock();
+          fetchFallbackWeather();
+          setInterval(updateFallbackClock, 1000);
+        })();
+      </script>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
