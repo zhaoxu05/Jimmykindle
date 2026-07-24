@@ -3,6 +3,7 @@ import { AppSettings, WeatherData, City, ThemeMode, LayoutPreset, ResolutionPres
 import { DEFAULT_CITIES, fetchWeatherWithFallback } from './services/weatherService';
 import { ClockDisplay } from './components/ClockDisplay';
 import { QuoteDisplay } from './components/QuoteDisplay';
+import { WorldClockMini } from './components/WorldClockMini';
 import { LunarDisplay } from './components/LunarDisplay';
 import { WeatherDisplay } from './components/WeatherDisplay';
 import { HistoryTodayDisplay } from './components/HistoryTodayDisplay';
@@ -28,6 +29,7 @@ import {
   Calendar,
   CloudSun,
   Monitor,
+  MapPin,
   ChevronDown,
   ChevronUp,
   Sparkles,
@@ -78,6 +80,9 @@ const DEFAULT_SETTINGS: AppSettings = {
   quoteSource: 'all',
   quoteRefreshInterval: 5,
 
+  showWorldClock: true,
+  worldClockCity: DEFAULT_CITIES[1], // Dublin
+
   autoKindleRefreshMinutes: 0,
   burnInProtection: false,
 };
@@ -95,6 +100,8 @@ export default function App() {
           showSunTrack: parsed.showSunTrack ?? false,
           showMoonPhase: parsed.showMoonPhase ?? false,
           showTides: parsed.showTides ?? false,
+          showWorldClock: parsed.showWorldClock ?? true,
+          worldClockCity: parsed.worldClockCity || DEFAULT_CITIES[1],
           moduleOrder: ensureCompleteModuleOrder(parsed.moduleOrder),
         };
       }
@@ -134,10 +141,16 @@ export default function App() {
 
   // UI Modals, Controls & Fullscreen
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'theme' | 'modules' | 'city' | 'weather' | 'kindle'>('theme');
   const [guideOpen, setGuideOpen] = useState(false);
   const [kindleFlashActive, setKindleFlashActive] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsExpanded, setControlsExpanded] = useState(false);
+
+  const openCitySettings = useCallback(() => {
+    setSettingsTab('city');
+    setSettingsOpen(true);
+  }, []);
 
   // Screen layout detection
   const [isLandscape, setIsLandscape] = useState(() =>
@@ -342,7 +355,7 @@ export default function App() {
       switch (id) {
         case 'clock':
           return (
-            <div key="clock-and-quote" className="w-full flex flex-col items-center justify-center space-y-3">
+            <div key="clock-and-quote" className="w-full flex flex-col items-center justify-center space-y-2">
               <ClockDisplay
                 key="clock"
                 city={settings.timeCity}
@@ -351,7 +364,19 @@ export default function App() {
                 fontSizeScale={settings.fontSizeScale}
                 isEink={isEink}
                 resolutionScale={resolutionScale}
+                onOpenCitySettings={openCitySettings}
               />
+              {settings.showWorldClock && (
+                <WorldClockMini
+                  key="worldClock"
+                  city={settings.worldClockCity || DEFAULT_CITIES[1]}
+                  use24Hour={settings.use24Hour}
+                  showSeconds={settings.showSeconds}
+                  isEink={isEink}
+                  fontSizeScale={settings.fontSizeScale}
+                  onOpenCitySettings={openCitySettings}
+                />
+              )}
               {settings.showQuote && (
                 <QuoteDisplay
                   key="quote"
@@ -382,7 +407,11 @@ export default function App() {
               loading={weatherLoading}
               weatherCity={settings.weatherCity}
               onRefresh={loadWeather}
-              onOpenSourceModal={() => setSettingsOpen(true)}
+              onOpenSourceModal={() => {
+                setSettingsTab('weather');
+                setSettingsOpen(true);
+              }}
+              onOpenCitySettings={openCitySettings}
               isEink={isEink}
               sourcesStatus={simpleSourcesStatus}
             />
@@ -491,6 +520,16 @@ export default function App() {
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
                 <span>布局: {settings.layoutPreset}</span>
+              </button>
+
+              {/* City Switcher */}
+              <button
+                onClick={openCitySettings}
+                className="px-2.5 py-1 rounded-xl border border-current/30 hover:bg-current/10 font-normal flex items-center gap-1 transition opacity-90 hover:opacity-100"
+                title="城市与时区设置"
+              >
+                <MapPin className="w-3.5 h-3.5 opacity-70" />
+                <span>城市: {settings.weatherCity.name}</span>
               </button>
 
               {/* Guide */}
@@ -820,10 +859,23 @@ export default function App() {
 
       {/* Footer Info Bar */}
       <footer id="standby-footer" className={`w-full ${containerMaxWidthClass} mx-auto pt-3 border-t border-current/15 flex flex-wrap items-center justify-between text-xs opacity-75 gap-2`}>
-        <div id="footer-city-tags" className="flex items-center gap-3">
-          <span>时间: {settings.timeCity.name}</span>
+        <div id="footer-city-tags" className="flex items-center gap-2">
+          <button
+            onClick={openCitySettings}
+            className="hover:underline flex items-center gap-1 font-normal opacity-90 hover:opacity-100 transition cursor-pointer"
+            title="点击设置时间与天气城市"
+          >
+            <MapPin className="w-3 h-3 opacity-70" />
+            <span>时间: {settings.timeCity.name}</span>
+          </button>
           <span>•</span>
-          <span>天气: {settings.weatherCity.name}</span>
+          <button
+            onClick={openCitySettings}
+            className="hover:underline flex items-center gap-1 font-normal opacity-90 hover:opacity-100 transition cursor-pointer"
+            title="点击设置时间与天气城市"
+          >
+            <span>天气: {settings.weatherCity.name}</span>
+          </button>
           {weatherData?.sourceName && (
             <>
               <span>•</span>
@@ -834,7 +886,10 @@ export default function App() {
 
         <div id="footer-system-info" className="flex items-center gap-3">
           <button
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => {
+              setSettingsTab('theme');
+              setSettingsOpen(true);
+            }}
             className="underline hover:opacity-100 transition"
           >
             设置
@@ -859,6 +914,7 @@ export default function App() {
         sourcesStatus={sourcesStatus}
         onTriggerKindleFlash={() => setKindleFlashActive(true)}
         onResetAllSettings={resetAllSettings}
+        initialTab={settingsTab}
       />
 
       <ExportGuideModal

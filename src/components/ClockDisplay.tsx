@@ -8,6 +8,7 @@ interface ClockDisplayProps {
   fontSizeScale: number;
   isEink: boolean;
   resolutionScale?: number;
+  onOpenCitySettings?: () => void;
 }
 
 export const ClockDisplay: React.FC<ClockDisplayProps> = ({
@@ -17,6 +18,7 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
   fontSizeScale,
   isEink,
   resolutionScale = 1.0,
+  onOpenCitySettings,
 }) => {
   const [now, setNow] = useState<Date>(new Date());
 
@@ -87,11 +89,17 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
   return (
     <div id="clock-display-container" className="flex flex-col items-center justify-center text-center select-none py-2">
       {/* City Badge / Label */}
-      <div id="clock-city-badge" className="flex items-center gap-2 mb-2 px-3 py-1 rounded-full border text-xs sm:text-sm font-medium tracking-wide">
-        <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+      <button
+        onClick={onOpenCitySettings}
+        id="clock-city-badge"
+        className="flex items-center gap-2 mb-2 px-3 py-1 rounded-full border border-current/20 text-xs sm:text-sm font-normal tracking-wide hover:bg-current/10 transition cursor-pointer group"
+        title="点击切换时间与天气城市"
+      >
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-current opacity-70" />
         <span>{city.name}时间</span>
-        <span className="opacity-70 text-[11px]">({city.timezone?.split('/')[1] || city.name})</span>
-      </div>
+        <span className="opacity-60 text-[11px]">({city.timezone?.split('/')[1] || city.name})</span>
+        <span className="text-[11px] px-1.5 py-0.5 rounded border border-current/20 opacity-75 font-normal">切换</span>
+      </button>
 
       {/* Main Big Time Digits */}
       <div

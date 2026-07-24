@@ -147,6 +147,10 @@ export interface AppSettings {
   showSunTrack: boolean;
   showMoonPhase: boolean;
 
+  // World Clock Mini
+  showWorldClock: boolean;
+  worldClockCity: City;
+
   // Header & Controls
   controlBarPosition: 'collapsible' | 'bottom' | 'top';
 

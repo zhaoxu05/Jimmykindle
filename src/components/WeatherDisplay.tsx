@@ -9,6 +9,7 @@ interface WeatherDisplayProps {
   weatherCity: City;
   onRefresh: () => void;
   onOpenSourceModal: () => void;
+  onOpenCitySettings?: () => void;
   isEink: boolean;
   sourcesStatus?: Record<string, string>;
 }
@@ -19,6 +20,7 @@ export const WeatherDisplay: React.FC<WeatherDisplayProps> = ({
   weatherCity,
   onRefresh,
   onOpenSourceModal,
+  onOpenCitySettings,
   isEink,
 }) => {
   if (loading && !weatherData) {
@@ -58,11 +60,20 @@ export const WeatherDisplay: React.FC<WeatherDisplayProps> = ({
       {/* Header: City Name & Refresh / Source Badge */}
       <div id="weather-card-header" className="flex items-center justify-between pb-3 border-b mb-3">
         <div id="weather-city-badge" className="flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-emerald-500" />
-          <span className="font-bold text-base sm:text-lg">{weatherCity.name}天气</span>
-          {weatherCity.admin1 && (
-            <span className="text-xs opacity-60 font-normal">({weatherCity.admin1})</span>
-          )}
+          <button
+            onClick={onOpenCitySettings}
+            className="flex items-center gap-1.5 hover:bg-current/10 p-1.5 rounded-xl border border-transparent hover:border-current/20 transition text-left cursor-pointer group"
+            title="点击切换时间与天气城市"
+          >
+            <MapPin className="w-4 h-4 opacity-75 group-hover:scale-110 transition-transform" />
+            <span className="font-semibold text-base sm:text-lg">{weatherCity.name}天气</span>
+            {weatherCity.admin1 && (
+              <span className="text-xs opacity-60 font-normal">({weatherCity.admin1})</span>
+            )}
+            <span className="text-xs px-1.5 py-0.5 rounded border border-current/20 opacity-75 font-normal ml-1">
+              切换
+            </span>
+          </button>
         </div>
 
         {/* Source & Refresh Buttons */}

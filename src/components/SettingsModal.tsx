@@ -11,6 +11,7 @@ import {
   Search,
   MapPin,
   Clock,
+  Globe,
   Shield,
   RotateCw,
   Zap,
@@ -39,6 +40,7 @@ interface SettingsModalProps {
   sourcesStatus: Record<string, { status: string; msg?: string }>;
   onTriggerKindleFlash: () => void;
   onResetAllSettings?: () => void;
+  initialTab?: 'theme' | 'modules' | 'city' | 'weather' | 'kindle';
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -50,14 +52,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   sourcesStatus,
   onTriggerKindleFlash,
   onResetAllSettings,
+  initialTab,
 }) => {
   const [activeTab, setActiveTab] = useState<'theme' | 'modules' | 'city' | 'weather' | 'kindle'>('theme');
+
+  React.useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
   const [timeCitySearch, setTimeCitySearch] = useState('');
   const [weatherCitySearch, setWeatherCitySearch] = useState('');
+  const [worldClockCitySearch, setWorldClockCitySearch] = useState('');
   const [searchResultsTime, setSearchResultsTime] = useState<City[]>(DEFAULT_CITIES);
   const [searchResultsWeather, setSearchResultsWeather] = useState<City[]>(DEFAULT_CITIES);
+  const [searchResultsWorldClock, setSearchResultsWorldClock] = useState<City[]>(DEFAULT_CITIES);
   const [isSearchingTime, setIsSearchingTime] = useState(false);
   const [isSearchingWeather, setIsSearchingWeather] = useState(false);
+  const [isSearchingWorldClock, setIsSearchingWorldClock] = useState(false);
 
   const currentModuleOrder = settings.moduleOrder && settings.moduleOrder.length > 0
     ? settings.moduleOrder
@@ -152,6 +164,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setIsSearchingWeather(false);
   };
 
+  const handleSearchWorldClockCity = async (q: string) => {
+    setWorldClockCitySearch(q);
+    setIsSearchingWorldClock(true);
+    const res = await searchCities(q);
+    setSearchResultsWorldClock(res);
+    setIsSearchingWorldClock(false);
+  };
+
   const themes: { id: ThemeMode; name: string; desc: string; icon: React.ReactNode }[] = [
     { id: 'eink', name: 'Kindle 电子墨水屏 (高对比白底)', desc: '极简黑白，无动画，防残影，Kindle 首选', icon: <Smartphone className="w-5 h-5" /> },
     { id: 'eink-inverted', name: 'Kindle 反色 (黑底白字)', desc: '适合 Kindle 夜间阅读或低光环境', icon: <Moon className="w-5 h-5" /> },
@@ -223,13 +243,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('city')}
-            className={`px-4 py-2.5 rounded-t-xl border-b-2 transition whitespace-nowrap ${
+            className={`px-4 py-2.5 rounded-t-xl border-b-2 transition whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === 'city'
-                ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-white dark:bg-zinc-900'
+                ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-white dark:bg-zinc-900 font-bold'
                 : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
             }`}
           >
-            城市与时区
+            <MapPin className="w-4 h-4 text-emerald-500" />
+            <span>城市与时区</span>
           </button>
           <button
             onClick={() => setActiveTab('weather')}
@@ -494,7 +515,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       className="w-4 h-4 accent-sky-500"
                     />
                   </label>
-                  <label className="flex items-center justify-between p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/5 cursor-pointer font-bold sm:col-span-2">
+                  <label className="flex items-center justify-between p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/5 cursor-pointer font-bold">
                     <span className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                       <QuoteIcon className="w-4 h-4" />
                       <span>在时间下方显示名人名言 / 每日一言</span>
@@ -504,6 +525,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       checked={settings.showQuote}
                       onChange={(e) => onUpdateSettings({ showQuote: e.target.checked })}
                       className="w-4 h-4 accent-emerald-500"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-3 rounded-xl border border-indigo-500/40 bg-indigo-500/5 cursor-pointer font-bold">
+                    <span className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                      <Globe className="w-4 h-4" />
+                      <span>在名言右侧显示异地迷你时钟 (默认都柏林)</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={settings.showWorldClock}
+                      onChange={(e) => onUpdateSettings({ showWorldClock: e.target.checked })}
+                      className="w-4 h-4 accent-indigo-500"
                     />
                   </label>
                 </div>
@@ -824,6 +857,57 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
               )}
+
+              {/* World Clock City Config */}
+              <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-indigo-500" />
+                    <span>名言右侧异地迷你时钟城市 (当前: {settings.worldClockCity?.name || '都柏林'})</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings.showWorldClock}
+                      onChange={(e) => onUpdateSettings({ showWorldClock: e.target.checked })}
+                      className="w-4 h-4 accent-indigo-500"
+                    />
+                    <span>显示</span>
+                  </label>
+                </div>
+
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-3 opacity-50" />
+                  <input
+                    type="text"
+                    placeholder="搜索异地时钟城市 (如: 都柏林, 伦敦, 东京, 巴黎, 纽约)..."
+                    value={worldClockCitySearch}
+                    onChange={(e) => handleSearchWorldClockCity(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-sm focus:outline-hidden focus:border-indigo-500"
+                  />
+                  {isSearchingWorldClock && (
+                    <RotateCw className="w-4 h-4 absolute right-3 top-3 animate-spin text-indigo-500" />
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-1">
+                  {searchResultsWorldClock.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => onUpdateSettings({ worldClockCity: c, showWorldClock: true })}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-1 transition ${
+                        settings.worldClockCity?.name === c.name
+                          ? 'border-indigo-500 bg-indigo-500 text-white font-bold'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400'
+                      }`}
+                    >
+                      <Globe className="w-3 h-3" />
+                      <span>{c.name}</span>
+                      <span className="opacity-70 text-[10px]">({c.country})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

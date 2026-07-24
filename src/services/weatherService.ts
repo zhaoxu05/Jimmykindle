@@ -2,6 +2,7 @@ import { City, ForecastDay, WeatherData, WeatherSourceConfig } from '../types';
 
 export const DEFAULT_CITIES: City[] = [
   { id: 'beijing', name: '北京', country: '中国', lat: 39.9042, lng: 116.4074, timezone: 'Asia/Shanghai', admin1: '北京市' },
+  { id: 'dublin', name: '都柏林', country: '爱尔兰', lat: 53.3498, lng: -6.2603, timezone: 'Europe/Dublin' },
   { id: 'shanghai', name: '上海', country: '中国', lat: 31.2304, lng: 121.4737, timezone: 'Asia/Shanghai', admin1: '上海市' },
   { id: 'guangzhou', name: '广州', country: '中国', lat: 23.1291, lng: 113.2644, timezone: 'Asia/Shanghai', admin1: '广东省' },
   { id: 'shenzhen', name: '深圳', country: '中国', lat: 22.5431, lng: 114.0579, timezone: 'Asia/Shanghai', admin1: '广东省' },
