@@ -21,6 +21,8 @@ import {
   LayoutGrid,
   Quote as QuoteIcon,
   BookOpen,
+  Newspaper,
+  PanelTop,
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -347,6 +349,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       className="w-4 h-4 accent-emerald-500"
                     />
                   </label>
+                  <label className="flex items-center justify-between p-3 rounded-xl border border-amber-500/40 bg-amber-500/5 cursor-pointer font-bold">
+                    <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                      <Newspaper className="w-4 h-4" />
+                      <span>显示【今日头条 (国内外混合源)】</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={settings.showNewsHeadlines}
+                      onChange={(e) => onUpdateSettings({ showNewsHeadlines: e.target.checked })}
+                      className="w-4 h-4 accent-amber-500"
+                    />
+                  </label>
                   <label className="flex items-center justify-between p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/5 cursor-pointer font-bold sm:col-span-2">
                     <span className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                       <QuoteIcon className="w-4 h-4" />
@@ -359,6 +373,41 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       className="w-4 h-4 accent-emerald-500"
                     />
                   </label>
+                </div>
+              </div>
+
+              {/* Control Bar Position Option */}
+              <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold flex items-center gap-2">
+                    <PanelTop className="w-4 h-4 text-emerald-500" />
+                    <span>设置控制栏位置与显隐方式</span>
+                  </label>
+                  <span className="text-xs text-zinc-500">不挡大屏，极简床头屏首选</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {[
+                    { id: 'collapsible', name: '悬浮折叠隐形 (推荐)', desc: '平时收起为微型图标，悬停或点击展开，无死角全屏' },
+                    { id: 'bottom', name: '底部统一固定 Dock 栏', desc: '整齐收纳在屏幕最底部，不遮挡主时间与天气' },
+                    { id: 'top', name: '顶部平铺展开', desc: '传统顶部横栏显示所有设备与控制按钮' },
+                  ].map((pos) => (
+                    <button
+                      key={pos.id}
+                      onClick={() => onUpdateSettings({ controlBarPosition: pos.id as any })}
+                      className={`p-3 rounded-xl border text-left transition ${
+                        settings.controlBarPosition === pos.id
+                          ? 'border-emerald-500 bg-emerald-500/10 font-bold'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">{pos.name}</span>
+                        {settings.controlBarPosition === pos.id && <Check className="w-4 h-4 text-emerald-500" />}
+                      </div>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{pos.desc}</p>
+                    </button>
+                  ))}
                 </div>
               </div>
 

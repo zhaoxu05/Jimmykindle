@@ -96,12 +96,16 @@ export interface AppSettings {
   weatherCity: City;
   syncCities: boolean; // if true, timeCity and weatherCity stay equal
 
-  // Lunar & Holiday
+  // Lunar, News & Holiday
   showLunar: boolean;
   showYiJi: boolean;
   showSolarTerms: boolean;
   showNextHoliday: boolean;
   showHistoryToday: boolean;
+  showNewsHeadlines: boolean;
+
+  // Header & Controls
+  controlBarPosition: 'collapsible' | 'bottom' | 'top';
 
   // Weather
   weatherRefreshMinutes: number; // e.g. 15, 30, 60
