@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { AppSettings, WeatherData, City, ThemeMode, LayoutPreset } from './types';
+import { AppSettings, WeatherData, City, ThemeMode, LayoutPreset, ResolutionPreset } from './types';
 import { DEFAULT_CITIES, fetchWeatherWithFallback } from './services/weatherService';
 import { ClockDisplay } from './components/ClockDisplay';
 import { LunarDisplay } from './components/LunarDisplay';
@@ -22,6 +22,7 @@ import {
   Calendar,
   CloudSun,
   Sparkles,
+  Monitor,
 } from 'lucide-react';
 
 const STORAGE_KEY = 'kindle_desk_standby_settings_v1';
@@ -29,6 +30,7 @@ const STORAGE_KEY = 'kindle_desk_standby_settings_v1';
 const DEFAULT_SETTINGS: AppSettings = {
   theme: 'eink',
   layoutPreset: 'auto',
+  resolutionPreset: 'auto',
   fontSizeScale: 1.0,
   showSeconds: true,
   use24Hour: true,
@@ -206,16 +208,49 @@ export default function App() {
 
   const isEink = settings.theme === 'eink' || settings.theme === 'eink-inverted';
 
+  const resolutionScale = useMemo(() => {
+    switch (settings.resolutionPreset) {
+      case '1k':
+        return 1.0;
+      case '2k':
+        return 1.3;
+      case '3k':
+        return 1.65;
+      case '4k':
+        return 2.1;
+      case 'auto':
+      default:
+        return 1.0;
+    }
+  }, [settings.resolutionPreset]);
+
+  const containerMaxWidthClass = useMemo(() => {
+    switch (settings.resolutionPreset) {
+      case '1k':
+        return 'max-w-7xl';
+      case '2k':
+        return 'max-w-[1800px]';
+      case '3k':
+        return 'max-w-[2400px]';
+      case '4k':
+        return 'max-w-[3200px]';
+      case 'auto':
+      default:
+        return 'max-w-7xl 2xl:max-w-[2200px]';
+    }
+  }, [settings.resolutionPreset]);
+
   return (
     <div
       id="standby-app-root"
       className={`min-h-screen w-full flex flex-col justify-between p-4 sm:p-6 md:p-8 font-sans transition-colors duration-300 ${themeClasses}`}
       style={{
         transform: `translate(${driftOffset.x}px, ${driftOffset.y}px)`,
+        fontSize: resolutionScale > 1 ? `${resolutionScale * 100}%` : undefined,
       }}
     >
       {/* Top Floating Control Bar */}
-      <header id="standby-header" className="w-full max-w-7xl mx-auto flex items-center justify-between pb-4 border-b border-current/15">
+      <header id="standby-header" className={`w-full ${containerMaxWidthClass} mx-auto flex items-center justify-between pb-4 border-b border-current/15`}>
         <div id="standby-app-title" className="flex items-center gap-2 font-bold text-base sm:text-lg tracking-wide">
           {settings.theme === 'eink' || settings.theme === 'eink-inverted' ? (
             <Smartphone className="w-5 h-5 shrink-0" />
@@ -226,12 +261,30 @@ export default function App() {
           )}
           <span>待机时钟</span>
           <span className="text-xs px-2 py-0.5 rounded border border-current/30 opacity-75 font-normal hidden sm:inline">
-            Kindle / 桌面适配
+            Kindle / 桌面 / {settings.resolutionPreset.toUpperCase()} 适配
           </span>
         </div>
 
         {/* Action Buttons */}
         <div id="standby-top-actions" className="flex items-center gap-2 text-xs sm:text-sm">
+          {/* Resolution Quick Switcher Pill */}
+          <button
+            onClick={() => {
+              const resList: ResolutionPreset[] = ['auto', '1k', '2k', '3k', '4k'];
+              const nextIdx = (resList.indexOf(settings.resolutionPreset) + 1) % resList.length;
+              updateSettings({ resolutionPreset: resList[nextIdx] });
+            }}
+            className="px-2.5 py-1.5 rounded-xl border border-current/30 hover:bg-current/10 font-medium flex items-center gap-1.5 transition"
+            title="手动切换 1K / 2K / 3K / 4K 或 智能自适应"
+          >
+            <Monitor className="w-3.5 h-3.5 text-emerald-500" />
+            {settings.resolutionPreset === 'auto' && <span>屏幕: 智能自适应</span>}
+            {settings.resolutionPreset === '1k' && <span>屏幕: 1K 1080P</span>}
+            {settings.resolutionPreset === '2k' && <span>屏幕: 2K 高清</span>}
+            {settings.resolutionPreset === '3k' && <span>屏幕: 3K 超清</span>}
+            {settings.resolutionPreset === '4k' && <span>屏幕: 4K 巨幕</span>}
+          </button>
+
           {/* Theme Quick Switcher Pill */}
           <button
             onClick={() => {
@@ -239,7 +292,7 @@ export default function App() {
               const nextIdx = (themes.indexOf(settings.theme) + 1) % themes.length;
               updateSettings({ theme: themes[nextIdx] });
             }}
-            className="px-2.5 py-1.5 rounded-xl border border-current/30 hover:bg-current/10 font-medium flex items-center gap-1.5 transition"
+            className="px-2.5 py-1.5 rounded-xl border border-current/30 hover:bg-current/10 font-medium flex items-center gap-1.5 transition hidden sm:flex"
             title="点击轮播切换 5 种配色主题"
           >
             {settings.theme === 'eink' && <span>主题: 墨水屏白</span>}
@@ -256,7 +309,7 @@ export default function App() {
               const nextIdx = (layouts.indexOf(settings.layoutPreset) + 1) % layouts.length;
               updateSettings({ layoutPreset: layouts[nextIdx] });
             }}
-            className="px-2.5 py-1.5 rounded-xl border border-current/30 hover:bg-current/10 font-medium flex items-center gap-1.5 transition hidden sm:flex"
+            className="px-2.5 py-1.5 rounded-xl border border-current/30 hover:bg-current/10 font-medium flex items-center gap-1.5 transition hidden md:flex"
             title="点击轮播切换 5 种布局结构"
           >
             <LayoutGrid className="w-3.5 h-3.5" />
@@ -301,7 +354,7 @@ export default function App() {
       </header>
 
       {/* Main Adaptive Workspace Body */}
-      <main id="standby-main-container" className="w-full max-w-7xl mx-auto my-auto py-4 sm:py-6 flex-1 flex flex-col justify-center">
+      <main id="standby-main-container" className={`w-full ${containerMaxWidthClass} mx-auto my-auto py-4 sm:py-6 flex-1 flex flex-col justify-center`}>
         {/* LAYOUT 1: TIME FOCUS */}
         {settings.layoutPreset === 'time-focus' && (
           <div id="layout-time-focus" className="flex flex-col items-center justify-center text-center space-y-6">
@@ -311,6 +364,7 @@ export default function App() {
               showSeconds={settings.showSeconds}
               fontSizeScale={settings.fontSizeScale * 1.25}
               isEink={isEink}
+              resolutionScale={resolutionScale}
             />
 
             {/* Micro info strip */}
@@ -347,6 +401,7 @@ export default function App() {
                 showSeconds={settings.showSeconds}
                 fontSizeScale={settings.fontSizeScale * 1.1}
                 isEink={isEink}
+                resolutionScale={resolutionScale}
               />
             </div>
 
@@ -388,6 +443,7 @@ export default function App() {
                 showSeconds={settings.showSeconds}
                 fontSizeScale={settings.fontSizeScale}
                 isEink={isEink}
+                resolutionScale={resolutionScale}
               />
             </div>
             <div className="lg:col-span-5 flex flex-col gap-4">
@@ -422,6 +478,7 @@ export default function App() {
               showSeconds={settings.showSeconds}
               fontSizeScale={settings.fontSizeScale}
               isEink={isEink}
+              resolutionScale={resolutionScale}
             />
 
             {settings.showLunar && (
@@ -461,6 +518,7 @@ export default function App() {
                   showSeconds={settings.showSeconds}
                   fontSizeScale={settings.fontSizeScale}
                   isEink={isEink}
+                  resolutionScale={resolutionScale}
                 />
               </div>
 
@@ -494,6 +552,7 @@ export default function App() {
                 showSeconds={settings.showSeconds}
                 fontSizeScale={settings.fontSizeScale}
                 isEink={isEink}
+                resolutionScale={resolutionScale}
               />
 
               {settings.showLunar && (
@@ -525,7 +584,7 @@ export default function App() {
       </main>
 
       {/* Footer Info Bar */}
-      <footer id="standby-footer" className="w-full max-w-7xl mx-auto pt-3 border-t border-current/15 flex flex-wrap items-center justify-between text-xs opacity-75 gap-2">
+      <footer id="standby-footer" className={`w-full ${containerMaxWidthClass} mx-auto pt-3 border-t border-current/15 flex flex-wrap items-center justify-between text-xs opacity-75 gap-2`}>
         <div id="footer-city-tags" className="flex items-center gap-3">
           <span>时间: {settings.timeCity.name}</span>
           <span>•</span>

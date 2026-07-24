@@ -16,6 +16,8 @@ import {
   Zap,
   Sliders,
   Sparkles,
+  Monitor,
+  Maximize2,
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -77,6 +79,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     { id: 'split-dash', name: '左右分屏 Dashboard (工作台大屏)', desc: '左侧大时钟 + 右侧完整农历宜忌与5日天气卡片', icon: <Sliders className="w-5 h-5" /> },
     { id: 'minimal-dock', name: '底栏极简 Dock (精致摆件)', desc: '顶部清爽时间，底部横向整齐 Dock 收纳栏', icon: <Tv className="w-5 h-5" /> },
     { id: 'vertical-stand', name: '竖屏桌面支架 (手机/平板竖放)', desc: '针对纵向屏幕最佳阅读比例设计的垂直堆叠', icon: <Smartphone className="w-5 h-5" /> },
+  ];
+
+  const resolutions: { id: AppSettings['resolutionPreset']; name: string; desc: string; tag: string; icon: React.ReactNode }[] = [
+    { id: 'auto', name: '智能自适应 (默认)', desc: '实时感知窗口及屏高尺寸，自动平滑响应', tag: 'AUTO', icon: <Sparkles className="w-5 h-5 text-emerald-500" /> },
+    { id: '1k', name: '1K / 1080P 标准屏', desc: '适配 Kindle Paperwhite / Oasis 与 1080P 显示器', tag: '1080P', icon: <Monitor className="w-5 h-5 text-sky-500" /> },
+    { id: '2k', name: '2K / 1440P 高清屏', desc: '适配 iPad Pro、2K 桌面显示屏，等比扩大元素', tag: '1440P', icon: <Maximize2 className="w-5 h-5 text-amber-500" /> },
+    { id: '3k', name: '3K 超清大屏', desc: '适配 3K MacBook Pro / 高清电子画框', tag: '3K', icon: <Tv className="w-5 h-5 text-purple-500" /> },
+    { id: '4k', name: '4K / 2160P 巨幕屏', desc: '适配 4K 客厅电视、Kindle Scribe 及 4K 墨水屏', tag: '4K', icon: <Sparkles className="w-5 h-5 text-rose-500" /> },
   ];
 
   return (
@@ -196,6 +206,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           {settings.layoutPreset === l.id && <Check className="w-4 h-4 text-emerald-500" />}
                         </div>
                         <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{l.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Resolution & Display Mode Selection */}
+              <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="font-bold text-base block">分辨率屏型适配模式</label>
+                  <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
+                    当前: {settings.resolutionPreset === 'auto' ? '智能自适应' : settings.resolutionPreset.toUpperCase()}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {resolutions.map((r) => (
+                    <button
+                      key={r.id}
+                      onClick={() => onUpdateSettings({ resolutionPreset: r.id })}
+                      className={`p-3.5 rounded-2xl border text-left flex items-start gap-3 transition ${
+                        settings.resolutionPreset === r.id
+                          ? 'border-emerald-500 bg-emerald-500/10 font-medium'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400'
+                      }`}
+                    >
+                      <div className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 shrink-0">
+                        {r.icon}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-bold flex items-center justify-between">
+                          <span className="flex items-center gap-1.5">
+                            <span>{r.name}</span>
+                          </span>
+                          {settings.resolutionPreset === r.id && <Check className="w-4 h-4 text-emerald-500" />}
+                        </div>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{r.desc}</p>
                       </div>
                     </button>
                   ))}

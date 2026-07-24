@@ -2,6 +2,8 @@ export type ThemeMode = 'eink' | 'eink-inverted' | 'dark' | 'sepia' | 'light';
 
 export type LayoutPreset = 'auto' | 'time-focus' | 'split-dash' | 'minimal-dock' | 'vertical-stand';
 
+export type ResolutionPreset = 'auto' | '1k' | '2k' | '3k' | '4k';
+
 export type ScreenOrientation = 'landscape' | 'portrait';
 
 export interface City {
@@ -82,6 +84,7 @@ export interface AppSettings {
   // Theme & Appearance
   theme: ThemeMode;
   layoutPreset: LayoutPreset;
+  resolutionPreset: ResolutionPreset;
   fontSizeScale: number; // 0.8 ~ 1.4
   showSeconds: boolean;
   use24Hour: boolean;

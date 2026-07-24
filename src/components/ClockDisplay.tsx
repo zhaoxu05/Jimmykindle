@@ -7,6 +7,7 @@ interface ClockDisplayProps {
   showSeconds: boolean;
   fontSizeScale: number;
   isEink: boolean;
+  resolutionScale?: number;
 }
 
 export const ClockDisplay: React.FC<ClockDisplayProps> = ({
@@ -15,6 +16,7 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
   showSeconds,
   fontSizeScale,
   isEink,
+  resolutionScale = 1.0,
 }) => {
   const [now, setNow] = useState<Date>(new Date());
 
@@ -80,6 +82,7 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
 
   const { hour, minute, second, dayPeriod } = getTimeString();
   const dateStr = getDateString();
+  const finalScale = fontSizeScale * resolutionScale;
 
   return (
     <div id="clock-display-container" className="flex flex-col items-center justify-center text-center select-none py-2">
@@ -97,7 +100,7 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
           isEink ? '' : 'transition-all duration-300'
         }`}
         style={{
-          fontSize: `calc(${fontSizeScale * 5.5}rem + 2.5vw)`,
+          fontSize: `calc(${finalScale * 5.5}rem + 2.5vw)`,
         }}
       >
         <span>{hour}</span>
@@ -106,7 +109,7 @@ export const ClockDisplay: React.FC<ClockDisplayProps> = ({
         {showSeconds && (
           <span
             className="text-[0.4em] font-normal opacity-80 ml-2 font-mono"
-            style={{ fontSize: `calc(${fontSizeScale * 2.2}rem + 1vw)` }}
+            style={{ fontSize: `calc(${finalScale * 2.2}rem + 1vw)` }}
           >
             :{second}
           </span>
