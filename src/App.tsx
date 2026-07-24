@@ -206,8 +206,7 @@ export default function App() {
 
   const handleShareLink = useCallback(() => {
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-    const shareText = `推荐一个好用的 Kindle / 平板桌面待机时钟：支持时间、天气、农历节气与历史上的今天！\n${currentUrl}`;
-    copyToClipboard(shareText);
+    copyToClipboard(currentUrl);
   }, [copyToClipboard]);
 
   const openCitySettings = useCallback(() => {

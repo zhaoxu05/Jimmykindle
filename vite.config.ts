@@ -8,7 +8,7 @@ function kindleLegacyScriptPlugin(): Plugin {
     name: 'kindle-legacy-script-plugin',
     apply: 'build',
     transformIndexHtml(html: string) {
-      // Remove type="module" and crossorigin in built bundle so Kindle Experimental Browser executes the JS file
+      // Remove type="module" and crossorigin in built bundle so Kindle Experimental Browser executes the JS file without ES module syntax errors
       return html
         .replace(/type="module"\s*/g, 'defer ')
         .replace(/crossorigin\s*/g, '');

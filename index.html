@@ -142,6 +142,76 @@
           };
         }
 
+        // Polyfill Object.assign
+        if (typeof Object.assign !== 'function') {
+          Object.assign = function(target) {
+            if (target == null) throw new TypeError('Cannot convert undefined or null to object');
+            var to = Object(target);
+            for (var index = 1; index < arguments.length; index++) {
+              var nextSource = arguments[index];
+              if (nextSource != null) {
+                for (var key in nextSource) {
+                  if (Object.prototype.hasOwnProperty.call(nextSource, key)) {
+                    to[key] = nextSource[key];
+                  }
+                }
+              }
+            }
+            return to;
+          };
+        }
+
+        // Polyfill Array.prototype.find & findIndex & includes
+        if (!Array.prototype.find) {
+          Array.prototype.find = function(predicate) {
+            if (this == null) throw new TypeError('Array.prototype.find called on null or undefined');
+            if (typeof predicate !== 'function') throw new TypeError('predicate must be a function');
+            var list = Object(this);
+            var length = list.length >>> 0;
+            var thisArg = arguments[1];
+            for (var i = 0; i < length; i++) {
+              var value = list[i];
+              if (predicate.call(thisArg, value, i, list)) return value;
+            }
+            return undefined;
+          };
+        }
+        if (!Array.prototype.findIndex) {
+          Array.prototype.findIndex = function(predicate) {
+            if (this == null) throw new TypeError('Array.prototype.findIndex called on null or undefined');
+            if (typeof predicate !== 'function') throw new TypeError('predicate must be a function');
+            var list = Object(this);
+            var length = list.length >>> 0;
+            var thisArg = arguments[1];
+            for (var i = 0; i < length; i++) {
+              if (predicate.call(thisArg, list[i], i, list)) return i;
+            }
+            return -1;
+          };
+        }
+        if (!Array.prototype.includes) {
+          Array.prototype.includes = function(searchElement, fromIndex) {
+            if (this == null) throw new TypeError('Array.prototype.includes called on null or undefined');
+            var O = Object(this);
+            var len = O.length >>> 0;
+            if (len === 0) return false;
+            var n = fromIndex | 0;
+            var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+            while (k < len) {
+              if (O[k] === searchElement || (typeof O[k] === 'number' && typeof searchElement === 'number' && isNaN(O[k]) && isNaN(searchElement))) return true;
+              k++;
+            }
+            return false;
+          };
+        }
+        if (!String.prototype.includes) {
+          String.prototype.includes = function(search, start) {
+            if (typeof start !== 'number') start = 0;
+            if (start + search.length > this.length) return false;
+            return this.indexOf(search, start) !== -1;
+          };
+        }
+
         // Polyfill Promise.prototype.finally
         if (typeof Promise !== 'undefined' && !Promise.prototype.finally) {
           Promise.prototype.finally = function(callback) {
@@ -154,15 +224,23 @@
         }
 
         // Kindle Error Diagnostic Fallback
-        window.addEventListener('error', function(e) {
+        function showKindleError(errMessage) {
           var root = document.getElementById('root');
           if (root && (!root.children || root.children.length === 0)) {
             root.innerHTML = '<div style="padding: 24px; font-family: sans-serif; text-align: center; color: #000; background: #fff;">' +
               '<h3 style="margin-bottom: 10px;">Kindle 渲染兼容提示</h3>' +
-              '<p style="font-size: 13px; color: #444;">网页加载出现脚本错误: ' + (e.message || '未知错误') + '</p>' +
+              '<p style="font-size: 13px; color: #444;">网页加载出现脚本错误: ' + (errMessage || '未知错误') + '</p>' +
               '<button onclick="location.reload()" style="margin-top: 15px; padding: 8px 18px; font-size: 14px; border: 2px solid #000; background: #fff; cursor: pointer;">点击刷新</button>' +
               '</div>';
           }
+        }
+
+        window.onerror = function(msg, url, line) {
+          showKindleError(msg + (line ? ' (第' + line + '行)' : ''));
+          return false;
+        };
+        window.addEventListener('error', function(e) {
+          showKindleError(e.message || e.reason || '解析错误');
         });
       })();
     </script>
