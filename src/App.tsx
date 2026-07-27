@@ -521,24 +521,26 @@ export default function App() {
   return (
     <div
       id="standby-app-root"
-      className={`min-h-screen w-full flex flex-col justify-between p-4 sm:p-6 md:p-8 font-sans transition-colors duration-300 ${themeClasses}`}
+      className={`min-h-screen w-full flex flex-col justify-between p-3 sm:p-5 md:p-6 pb-12 sm:pb-16 font-sans transition-colors duration-300 overflow-y-auto ${themeClasses}`}
       style={{
         transform: `translate(${driftOffset.x}px, ${driftOffset.y}px)`,
         fontSize: resolutionScale > 1 ? `${resolutionScale * 100}%` : undefined,
       }}
     >
-      {/* Pinned Kindle Mode Quick Recovery Button */}
+      {/* Prominent Mode Switcher Button at Top Left */}
       <button
-        onClick={resetToKindleMode}
+        onClick={() => {
+          if (typeof (window as any).switchToKindleMode === 'function') {
+            (window as any).switchToKindleMode();
+          } else {
+            resetToKindleMode();
+          }
+        }}
         id="kindle-quick-recovery-btn"
-        className={`fixed top-3 left-3 z-40 px-2.5 py-1 rounded-lg border-2 font-black text-xs shadow-md opacity-80 hover:opacity-100 flex items-center gap-1 transition cursor-pointer ${
-          isEink
-            ? 'border-zinc-900 dark:border-zinc-100 bg-white dark:bg-black text-black dark:text-white'
-            : 'border-zinc-900 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 dark:border-white'
-        }`}
-        title="如在 Kindle 上误切其他主题或排版导致卡住，点击一秒还原并锁死为 Kindle 最佳高对比黑白模式"
+        className="fixed top-3 left-3 z-40 px-3 py-1.5 rounded-xl border-2 border-amber-600 dark:border-amber-400 bg-amber-500/20 text-amber-900 dark:text-amber-100 font-bold text-xs shadow-lg hover:scale-105 flex items-center gap-1.5 transition cursor-pointer backdrop-blur-md"
+        title="一键切换至 Kindle 原生墨水屏模式 (纯净低功耗、巨型时间、适配 90°/270° 横屏)"
       >
-        <span>⚡ 还原Kindle屏</span>
+        <span>📟 模式：Kindle</span>
       </button>
 
       {/* Floating Collapsible Control Trigger (if controlBarPosition === 'collapsible') */}
@@ -986,7 +988,7 @@ export default function App() {
       )}
 
       {/* Footer Info Bar */}
-      <footer id="standby-footer" className={`w-full ${containerMaxWidthClass} mx-auto pt-3 border-t border-current/15 flex flex-wrap items-center justify-between text-xs opacity-75 gap-2`}>
+      <footer id="standby-footer" className={`w-full ${containerMaxWidthClass} mx-auto pt-4 pb-8 border-t border-current/15 flex flex-wrap items-center justify-between text-xs opacity-90 gap-3 relative z-20`}>
         <div id="footer-city-tags" className="flex items-center gap-2">
           <button
             onClick={openCitySettings}
@@ -1031,10 +1033,10 @@ export default function App() {
                 window.location.reload();
               }
             }}
-            className="underline hover:opacity-100 opacity-85 transition cursor-pointer"
+            className="underline hover:opacity-100 opacity-85 transition cursor-pointer font-bold"
             title="强行切换至 Kindle ES5 独立原生模式（纯净低功耗、支持 90°/270° 横屏旋转）"
           >
-            📟 Kindle模式
+            📟 模式：Kindle
           </button>
           <span>•</span>
           <button
